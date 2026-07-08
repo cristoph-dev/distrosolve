@@ -22,10 +22,9 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
-  HelpCircle,
-  ExternalLink
+  HelpCircle
 } from 'lucide-react';
-import Link from 'next/link';
+import GlossaryPopoverLink from '@/components/GlossaryPopoverLink';
 import { 
   calculateMM1, 
   calculateMM1K, 
@@ -63,6 +62,7 @@ import {
   CartesianGrid,
   Cell
 } from "recharts";
+import { useSessionState } from "@/lib/use-session-state";
 
 const chartConfig = {
   p: {
@@ -76,23 +76,32 @@ export default function QueuesPage() {
     document.title = "Teoría de colas | distrosolve";
   }, []);
 
-  const [model, setModel] = useState<"mm1" | "mm1k">("mm1");
-  const [lambda, setLambda] = useState<number>(5);
-  const [mu, setMu] = useState<number>(8);
-  const [K, setK] = useState<number>(10);
+  const [hasVisited, setHasVisited] = useSessionState("queues:hasVisited", false);
+  const [shouldRunEntryAnimations] = useState(() => !hasVisited);
+
+  useEffect(() => {
+    if (!hasVisited) {
+      setHasVisited(true);
+    }
+  }, [hasVisited, setHasVisited]);
+
+  const [model, setModel] = useSessionState<"mm1" | "mm1k">("queues:model", "mm1");
+  const [lambda, setLambda] = useSessionState<number>("queues:lambda", 5);
+  const [mu, setMu] = useSessionState<number>("queues:mu", 8);
+  const [K, setK] = useSessionState<number>("queues:K", 10);
   
   // Estado para controlar la visibilidad de los resultados
-  const [hasCalculated, setHasCalculated] = useState(false);
-  const [showGraph, setShowGraph] = useState(false);
-  const [hasScrolled, setHasScrolled] = useState(false);
+  const [hasCalculated, setHasCalculated] = useSessionState("queues:hasCalculated", false);
+  const [showGraph, setShowGraph] = useSessionState("queues:showGraph", false);
+  const [hasScrolled, setHasScrolled] = useSessionState("queues:hasScrolled", false);
   const [isGraphLoading, setIsGraphLoading] = useState(false);
   const graphRef = useRef<HTMLDivElement>(null);
 
   // Estado con los valores calculados (desacoplados de los inputs)
-  const [results, setResults] = useState<QueueMetrics | null>(null);
-  const [calcModel, setCalcModel] = useState<"mm1" | "mm1k">("mm1");
-  const [calcK, setCalcK] = useState<number>(10);
-  const [error, setError] = useState<string | null>(null);
+  const [results, setResults] = useSessionState<QueueMetrics | null>("queues:results", null);
+  const [calcModel, setCalcModel] = useSessionState<"mm1" | "mm1k">("queues:calcModel", "mm1");
+  const [calcK, setCalcK] = useSessionState<number>("queues:calcK", 10);
+  const [error, setError] = useSessionState<string | null>("queues:error", null);
 
   // Efecto para hacer scroll a la gráfica cuando aparece (solo la primera vez)
   useEffect(() => {
@@ -102,7 +111,7 @@ export default function QueuesPage() {
         setHasScrolled(true);
       }, 100);
     }
-  }, [showGraph, isGraphLoading, hasScrolled]);
+  }, [showGraph, isGraphLoading, hasScrolled, setHasScrolled]);
 
   const handleCalculate = () => {
     setError(null);
@@ -137,7 +146,7 @@ export default function QueuesPage() {
   return (
     <div className="p-6 space-y-6 mx-auto transition-all duration-700 pb-24">
       <div className={cn(
-        "flex flex-col space-y-4 mb-6 mx-auto transition-all duration-700 ease-in-out",
+        "flex flex-col space-y-4 mb-6 mx-auto transition-all duration-1000 ease-in-out",
         hasCalculated ? "max-w-[920px]" : "max-w-md"
       )}>
         <div className="flex items-center text-[10px] font-mono text-zinc-500 uppercase tracking-[0.2em]">
@@ -151,7 +160,7 @@ export default function QueuesPage() {
       </div>
 
       <div className={cn(
-        "flex flex-col md:flex-row justify-start items-start gap-0 transition-all duration-1000 ease-in-out mx-auto",
+        "flex flex-col md:flex-row justify-start items-start md:items-stretch gap-0 transition-all duration-1000 ease-in-out mx-auto",
         hasCalculated ? "max-w-[920px]" : "max-w-md"
       )}>
         {/* Columna Izquierda: Configuración */}
@@ -163,22 +172,17 @@ export default function QueuesPage() {
             <div className="absolute top-3 right-3">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 p-0 hover:bg-zinc-800 rounded-full">
-                    <Info className="h-3.5 w-3.5 text-zinc-600" />
+                  <Button variant="ghost" size="icon" className="bento-info-trigger">
+                    <Info className="bento-info-icon" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent side="top" align="end" className="w-80 bg-zinc-900 border-zinc-800 text-zinc-300">
                   <div className="space-y-3">
                     <h4 className="font-mono text-xs uppercase tracking-wider text-white">Configuración del Modelo</h4>
-                    <p className="text-xs leading-relaxed">
+                    <p className="popover-copy">
                       Define el modelo de colas (M/M/1 o M/M/1/K) y ajusta las tasas de llegada y servicio para analizar el comportamiento del sistema.
                     </p>
-                    <Link 
-                      href="/glossary" 
-                      className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-tight text-white hover:text-zinc-300 transition-colors border-t border-zinc-800 pt-2 w-full"
-                    >
-                      Ver en glosario <ExternalLink className="h-3 w-3" />
-                    </Link>
+                    <GlossaryPopoverLink href="/glossary#colas" />
                   </div>
                 </PopoverContent>
               </Popover>
@@ -188,26 +192,26 @@ export default function QueuesPage() {
                 <Server className="w-4 h-4 text-zinc-500" />
                 Configuración
               </CardTitle>
-              <CardDescription className="text-zinc-500 font-mono text-xs">
+              <CardDescription className="card-description-copy">
                 Selecciona el modelo y define las tasas.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 pt-6 pb-0">
               <Tabs 
-                defaultValue="mm1" 
-                onValueChange={(val) => setModel(val as any)}
+                value={model} 
+                onValueChange={(val) => setModel(val as "mm1" | "mm1k")}
                 className="w-full"
               >
                 <TabsList className="bg-zinc-950 border border-zinc-800 w-full h-10 p-1 rounded-lg mb-6">
                   <TabsTrigger 
                     value="mm1" 
-                    className="flex-1 text-[10px] font-mono uppercase tracking-wider text-zinc-500 hover:text-white data-[state=active]:bg-zinc-800 data-[state=active]:text-white transition-all"
+                    className="flex-1 text-[11px] font-mono uppercase tracking-wider text-zinc-500 hover:text-white data-[state=active]:bg-zinc-800 data-[state=active]:text-white transition-all"
                   >
                     Infinito (M/M/1)
                   </TabsTrigger>
                   <TabsTrigger 
                     value="mm1k" 
-                    className="flex-1 text-[10px] font-mono uppercase tracking-wider text-zinc-500 hover:text-white data-[state=active]:bg-zinc-800 data-[state=active]:text-white transition-all"
+                    className="flex-1 text-[11px] font-mono uppercase tracking-wider text-zinc-500 hover:text-white data-[state=active]:bg-zinc-800 data-[state=active]:text-white transition-all"
                   >
                     Finito (M/M/1/K)
                   </TabsTrigger>
@@ -216,10 +220,10 @@ export default function QueuesPage() {
                 <div className="flex flex-col gap-4">
                   <div className="space-y-2 flex flex-col items-start">
                     <div className="flex items-center justify-start gap-1.5 h-4">
-                      <Label className="text-white text-[10px] font-mono uppercase tracking-wider">Tasa de Llegada (λ)</Label>
+                      <Label className="technical-label text-white">Tasa de Llegada (λ)</Label>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <HelpCircle className="w-4 h-4 text-zinc-600" />
+                          <HelpCircle className="inline-help-icon" />
                         </TooltipTrigger>
                         <TooltipContent side="right">
                           Frecuencia de entrada de clientes
@@ -250,10 +254,10 @@ export default function QueuesPage() {
                   </div>
                   <div className="space-y-2 flex flex-col items-start">
                     <div className="flex items-center justify-start gap-1.5 h-4">
-                      <Label className="text-white text-[10px] font-mono uppercase tracking-wider">Tasa de Servicio (μ)</Label>
+                      <Label className="technical-label text-white">Tasa de Servicio (μ)</Label>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <HelpCircle className="w-4 h-4 text-zinc-600" />
+                          <HelpCircle className="inline-help-icon" />
                         </TooltipTrigger>
                         <TooltipContent side="right">
                           Capacidad de atención del servidor
@@ -289,10 +293,10 @@ export default function QueuesPage() {
                   )}>
                     <div className="pt-4 space-y-2 w-full flex flex-col items-start">
                       <div className="flex items-center justify-start gap-1.5 h-4">
-                        <Label className="text-white text-[10px] font-mono uppercase tracking-wider">Capacidad Sistema (K)</Label>
+                        <Label className="technical-label text-white">Capacidad Sistema (K)</Label>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <HelpCircle className="w-4 h-4 text-zinc-600" />
+                            <HelpCircle className="inline-help-icon" />
                           </TooltipTrigger>
                           <TooltipContent side="right">
                             Límite máximo de clientes permitidos
@@ -343,29 +347,29 @@ export default function QueuesPage() {
 
         {/* Columna Derecha: Resultados (Solo aparece si hasCalculated es true) */}
         <div className={cn(
-          "transition-all duration-700 ease-in-out shrink-0 flex flex-col self-stretch",
+          "transition-all duration-700 ease-in-out shrink-0 flex flex-col self-stretch min-h-0",
           hasCalculated ? "w-full max-w-md opacity-100 overflow-visible" : "w-0 opacity-0 pointer-events-none overflow-hidden"
         )}>
-          <Card className="bg-zinc-900 border-zinc-800 text-white rounded-xl relative h-full animate-in fade-in duration-700 flex flex-col">
+          <Card
+            className={cn(
+              "bg-zinc-900 border-zinc-800 text-white rounded-xl relative h-full min-h-0 overflow-hidden flex flex-col",
+              shouldRunEntryAnimations && "animate-in fade-in duration-700"
+            )}
+          >
             <div className="absolute top-3 right-3">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 p-0 hover:bg-zinc-800 rounded-full">
-                    <Info className="h-3.5 w-3.5 text-zinc-600" />
+                  <Button variant="ghost" size="icon" className="bento-info-trigger">
+                    <Info className="bento-info-icon" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent side="top" align="end" className="w-80 bg-zinc-900 border-zinc-800 text-zinc-300">
                   <div className="space-y-3">
                     <h4 className="font-mono text-xs uppercase tracking-wider text-white">Desempeño del Sistema</h4>
-                    <p className="text-xs leading-relaxed">
+                    <p className="popover-copy">
                       Muestra los indicadores clave del modelo seleccionado, incluyendo el tiempo de espera, el número de clientes en cola y la utilización del servidor.
                     </p>
-                    <Link 
-                      href="/glossary#metricas" 
-                      className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-tight text-white hover:text-zinc-300 transition-colors border-t border-zinc-800 pt-2 w-full"
-                    >
-                      Ver en glosario <ExternalLink className="h-3 w-3" />
-                    </Link>
+                    <GlossaryPopoverLink href="/glossary#metricas" />
                   </div>
                 </PopoverContent>
               </Popover>
@@ -375,21 +379,24 @@ export default function QueuesPage() {
                 <BarChart3 className="w-4 h-4 text-zinc-500" />
                 Desempeño del sistema
               </CardTitle>
-              <CardDescription className="text-zinc-500 font-mono text-xs">
+              <CardDescription className="card-description-copy">
                 Resultados para {calcModel === "mm1" ? "cola infinita" : `límite de ${calcK} clientes`}.
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-0 border-t border-zinc-800/50 flex-grow flex flex-col pb-0">
+            <CardContent className="p-0 border-t border-zinc-800/50 flex-1 min-h-0 flex flex-col pb-0 overflow-hidden">
               {results && (
                 <div 
                   key={JSON.stringify(results)} 
-                  className="flex-grow flex flex-col relative pt-4 animate-in fade-in duration-1000"
+                  className={cn(
+                    "flex-1 min-h-0 flex flex-col relative pt-4 overflow-hidden",
+                    shouldRunEntryAnimations && "animate-in fade-in duration-1000"
+                  )}
                 >
                   {/* Línea divisoria vertical que va de arriba a abajo */}
                   <div className="absolute top-0 bottom-0 left-1/2 w-[1px] bg-zinc-800 z-10" />
                   
-                  <div className="flex-grow grid grid-cols-2 border-b border-zinc-800">
-                    <div className="flex flex-col divide-y divide-zinc-800">
+                  <div className="flex-1 min-h-0 grid grid-cols-2 border-b border-zinc-800">
+                    <div className="grid min-h-0 grid-rows-[repeat(var(--metric-rows),minmax(0,1fr))] divide-y divide-zinc-800 [--metric-rows:3] has-[>[data-extra-metric]]:[--metric-rows:4]">
                       <MetricItem 
                         label="Utilización (Rho)" 
                         value={`${(results.rho * 100).toFixed(2)}%`} 
@@ -410,6 +417,7 @@ export default function QueuesPage() {
                       />
                       {calcModel === "mm1k" && (
                         <MetricItem 
+                          data-extra-metric
                           label="λ Efectiva" 
                           value={results.lambdaEff?.toFixed(4) || "0"} 
                           sub="Tasa real entrada" 
@@ -417,7 +425,7 @@ export default function QueuesPage() {
                         />
                       )}
                     </div>
-                    <div className="flex flex-col divide-y divide-zinc-800">
+                    <div className="grid min-h-0 grid-rows-[repeat(var(--metric-rows),minmax(0,1fr))] divide-y divide-zinc-800 [--metric-rows:3] has-[>[data-extra-metric]]:[--metric-rows:4]">
                       <MetricItem 
                         label="Prob. Vacío (P0)" 
                         value={`${(results.p0 * 100).toFixed(2)}%`} 
@@ -438,6 +446,7 @@ export default function QueuesPage() {
                       />
                       {calcModel === "mm1k" && (
                         <MetricItem 
+                          data-extra-metric
                           label="λ Perdida" 
                           value={results.lambdaLost?.toFixed(4) || "0"} 
                           sub="Rechazados" 
@@ -457,7 +466,10 @@ export default function QueuesPage() {
       {showGraph && (
         <div 
           ref={graphRef}
-          className="mx-auto max-w-[920px] w-full mt-6 animate-in fade-in slide-in-from-bottom-12 duration-1000 ease-out"
+          className={cn(
+            "mx-auto max-w-[920px] w-full mt-6",
+            shouldRunEntryAnimations && "animate-in fade-in slide-in-from-bottom-12 duration-1000 ease-out"
+          )}
         >
           <Card className="bg-zinc-900 border-zinc-800 text-white rounded-xl overflow-hidden min-h-[450px] flex flex-col relative">
             {/* Overlay de Carga */}
@@ -478,8 +490,8 @@ export default function QueuesPage() {
                 <BarChart3 className="w-4 h-4 text-zinc-500" />
                 Distribución de Probabilidad P(n)
               </CardTitle>
-              <CardDescription className="text-zinc-500 font-mono text-xs">
-                Probabilidad de encontrar exactamente 'n' clientes en el sistema.
+              <CardDescription className="card-description-copy">
+                Probabilidad de encontrar exactamente &apos;n&apos; clientes en el sistema.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex-grow p-6 pt-10">
@@ -528,15 +540,15 @@ export default function QueuesPage() {
   );
 }
 
-function MetricItem({ label, value, sub, className, tooltip }: { label: string; value: string; sub: string, className?: string, tooltip?: string }) {
+function MetricItem({ label, value, sub, className, tooltip, ...props }: React.HTMLAttributes<HTMLDivElement> & { label: string; value: string; sub: string, tooltip?: string }) {
   return (
-    <div className={cn("p-6 flex flex-col space-y-1 relative group", className)}>
+    <div className={cn("min-h-0 px-6 py-3 flex flex-col justify-center space-y-1 relative group", className)} {...props}>
       <div className="flex items-center gap-1.5">
-        <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider">{label}</span>
+        <span className="technical-caption text-zinc-500">{label}</span>
         {tooltip && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <HelpCircle className="w-3 h-3 text-zinc-700" />
+              <HelpCircle className="inline-help-icon" />
             </TooltipTrigger>
             <TooltipContent side="right">
               {tooltip}
@@ -545,7 +557,11 @@ function MetricItem({ label, value, sub, className, tooltip }: { label: string; 
         )}
       </div>
       <span className="text-2xl font-normal text-white font-mono">{value}</span>
-      <span className="text-[9px] text-zinc-600 font-mono">{sub}</span>
+      <span className="text-[10px] text-zinc-600 font-mono">{sub}</span>
     </div>
   );
 }
+
+
+
+

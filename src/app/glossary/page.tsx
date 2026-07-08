@@ -40,9 +40,32 @@ const exponentialData = Array.from({ length: 40 }, (_, i) => ({
 }));
 
 export default function GlossaryPage() {
+  const scrollTo = React.useCallback((id: string, behavior: ScrollBehavior = 'smooth') => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior, block: 'start' });
+  }, []);
+
   React.useEffect(() => {
     document.title = "Glosario | distrosolve";
   }, []);
+
+  React.useEffect(() => {
+    const scrollToHash = () => {
+      const id = window.location.hash.replace('#', '');
+      if (!id) return;
+
+      window.requestAnimationFrame(() => {
+        scrollTo(id);
+      });
+    };
+
+    scrollToHash();
+    window.addEventListener('hashchange', scrollToHash);
+
+    return () => {
+      window.removeEventListener('hashchange', scrollToHash);
+    };
+  }, [scrollTo]);
 
   const sections = [
     { id: 'conceptos', title: 'Conceptos Generales' },
@@ -52,11 +75,6 @@ export default function GlossaryPage() {
     { id: 'colas', title: 'Teoría de Colas' },
     { id: 'metricas', title: 'Métricas de Desempeño' },
   ];
-
-  const scrollTo = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
 
   return (
     <div className="min-h-screen bg-black text-zinc-300 font-sans selection:bg-zinc-800 selection:text-white pb-32">

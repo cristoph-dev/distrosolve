@@ -10,14 +10,14 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
+import {
   calculateProbability, 
   poisson, 
   exponential,
   ProbType 
 } from '@/lib/distributions';
-import { Info, Hash, Check, ChevronsUpDown, ChevronLeft, ChevronRight, Sigma, HelpCircle, BarChart3, LineChart as LineChartIcon, ExternalLink } from 'lucide-react';
-import Link from 'next/link';
+import { Info, Hash, Check, ChevronsUpDown, ChevronLeft, ChevronRight, Sigma, HelpCircle, BarChart3, LineChart as LineChartIcon } from 'lucide-react';
+import GlossaryPopoverLink from '@/components/GlossaryPopoverLink';
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -64,13 +64,16 @@ import {
   ResponsiveContainer,
   Cell
 } from "recharts";
+import { useSessionState } from "@/lib/use-session-state";
 
-const distributions = [
+type DistributionType = "Poisson" | "Exponencial";
+
+const distributions: { value: DistributionType; label: string }[] = [
   { value: "Poisson", label: "Poisson (Discreta)" },
   { value: "Exponencial", label: "Exponencial (Continua)" },
 ];
 
-const probTypes = [
+const probTypes: { value: ProbType; label: string }[] = [
   { value: "P(X = xi)", label: "Probabilidad puntual (x = xi)" },
   { value: "P(X <= xi)", label: "Cola inferior acumulada (x ≤ xi)" },
   { value: "P(X < xi)", label: "Cola inferior estricta (x < xi)" },
@@ -93,32 +96,50 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+type SimulatorValues = {
+  distType: DistributionType;
+  param: number;
+  probType: ProbType;
+  xi: number;
+  xj: number;
+};
+
 export default function SimulatorPage() {
   useEffect(() => {
     document.title = "Simulador de distribuciones | distrosolve";
   }, []);
 
+  const [hasVisited, setHasVisited] = useSessionState("simulator:hasVisited", false);
+  const [shouldRunEntryAnimations] = useState(() => !hasVisited);
+
+  useEffect(() => {
+    if (!hasVisited) {
+      setHasVisited(true);
+    }
+  }, [hasVisited, setHasVisited]);
+
   // --- Estado ---
-  const [distType, setDistType] = useState<string>("Poisson");
+  const [distType, setDistType] = useSessionState<DistributionType>("simulator:distType", "Poisson");
   const [openDist, setOpenDist] = useState(false);
   
-  const [param, setParam] = useState<number>(5);
-  const [xi, setXi] = useState<number>(2);
-  const [xj, setXj] = useState<number>(4);
-  const [probType, setProbType] = useState<string>("P(X <= xi)");
+  const [param, setParam] = useSessionState<number>("simulator:param", 5);
+  const [xi, setXi] = useSessionState<number>("simulator:xi", 2);
+  const [xj, setXj] = useSessionState<number>("simulator:xj", 4);
+  const [probType, setProbType] = useSessionState<ProbType>("simulator:probType", "P(X <= xi)");
   const [openProb, setOpenProb] = useState(false);
-  const [precision, setPrecision] = useState<number>(4);
+  const [precision, setPrecision] = useSessionState<number>("simulator:precision", 4);
 
   // Estado para saber si se ha realizado al menos un cálculo
-  const [hasCalculated, setHasCalculated] = useState(false);
+  const [hasCalculated, setHasCalculated] = useSessionState("simulator:hasCalculated", false);
   
   // Estado para mostrar la gráfica
-  const [showGraph, setShowGraph] = useState(false);
+  const [showGraph, setShowGraph] = useSessionState("simulator:showGraph", false);
+  const [hasScrolled, setHasScrolled] = useSessionState("simulator:hasScrolled", false);
   const [isGraphLoading, setIsGraphLoading] = useState(false);
   const graphRef = useRef<HTMLDivElement>(null);
 
   // Estado para capturar los valores "congelados" en el momento del cálculo (Cuadro 2)
-  const [calculatedValues, setCalculatedValues] = useState({
+  const [calculatedValues, setCalculatedValues] = useSessionState<SimulatorValues>("simulator:calculatedValues", {
     distType: "Poisson",
     param: 5,
     probType: "P(X <= xi)" as ProbType,
@@ -127,7 +148,7 @@ export default function SimulatorPage() {
   });
 
   // Estado específico para la GRÁFICA (solo se actualiza al darle a "Generar Gráfica")
-  const [graphValues, setGraphValues] = useState({
+  const [graphValues, setGraphValues] = useSessionState<SimulatorValues>("simulator:graphValues", {
     distType: "Poisson",
     param: 5,
     probType: "P(X <= xi)" as ProbType,
@@ -137,12 +158,13 @@ export default function SimulatorPage() {
 
   // Efecto para hacer scroll a la gráfica cuando aparece
   useEffect(() => {
-    if (showGraph && graphRef.current && !isGraphLoading) {
+    if (showGraph && graphRef.current && !isGraphLoading && !hasScrolled) {
       setTimeout(() => {
         graphRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setHasScrolled(true);
       }, 100);
     }
-  }, [showGraph, isGraphLoading]);
+  }, [showGraph, isGraphLoading, hasScrolled, setHasScrolled]);
 
   // --- Cálculos (Usando solo los valores congelados del cálculo) ---
   const stats = useMemo(() => {
@@ -162,9 +184,9 @@ export default function SimulatorPage() {
 
   const probability = useMemo(() => {
     return calculateProbability(
-      calculatedValues.distType as any, 
+      calculatedValues.distType, 
       calculatedValues.param, 
-      calculatedValues.probType as any, 
+      calculatedValues.probType, 
       calculatedValues.xi, 
       calculatedValues.xj
     );
@@ -249,6 +271,7 @@ export default function SimulatorPage() {
   };
 
   const handleGenerateGraph = () => {
+    setHasScrolled(false);
     setIsGraphLoading(true);
     setShowGraph(true);
     
@@ -270,7 +293,7 @@ export default function SimulatorPage() {
   return (
     <div className="p-6 space-y-6 mx-auto transition-all duration-700 pb-24">
       <div className={cn(
-        "flex flex-col space-y-4 mb-6 mx-auto transition-all duration-700 ease-in-out",
+        "flex flex-col space-y-4 mb-6 mx-auto transition-all duration-1000 ease-in-out",
         hasCalculated ? "max-w-[920px]" : "max-w-md"
       )}>
         <div className="flex items-center text-[10px] font-mono text-zinc-500 uppercase tracking-[0.2em]">
@@ -298,22 +321,17 @@ export default function SimulatorPage() {
             <div className="absolute top-3 right-3">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 p-0 hover:bg-zinc-800 rounded-full">
-                    <Info className="h-3.5 w-3.5 text-zinc-600" />
+                  <Button variant="ghost" size="icon" className="bento-info-trigger">
+                    <Info className="bento-info-icon" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent side="top" align="end" className="w-80 bg-zinc-900 border-zinc-800 text-zinc-300">
                   <div className="space-y-3">
                     <h4 className="font-mono text-xs uppercase tracking-wider text-white">Cálculo de Distribución</h4>
-                    <p className="text-xs leading-relaxed">
+                    <p className="popover-copy">
                       Este módulo permite calcular probabilidades específicas para distribuciones discretas (Poisson) y continuas (Exponencial). Configura los parámetros y define el rango de interés.
                     </p>
-                    <Link 
-                      href={distType === "Poisson" ? "/glossary#poisson" : "/glossary#exponencial"}
-                      className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-tight text-white hover:text-zinc-300 transition-colors border-t border-zinc-800 pt-2 w-full"
-                    >
-                      Ver en glosario <ExternalLink className="h-3 w-3" />
-                    </Link>
+                    <GlossaryPopoverLink href={distType === "Poisson" ? "/glossary#poisson" : "/glossary#exponencial"} />
                   </div>
                 </PopoverContent>
               </Popover>
@@ -323,7 +341,7 @@ export default function SimulatorPage() {
                 <Hash className="w-4 h-4 text-zinc-500" />
                 Cálculo de distribución
               </CardTitle>
-              <CardDescription className="text-zinc-500 font-mono text-xs">
+              <CardDescription className="card-description-copy">
                 Configura los parámetros y obtén resultados precisos.
               </CardDescription>
             </CardHeader>
@@ -331,7 +349,7 @@ export default function SimulatorPage() {
               {/* Sección Configuración */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2 flex flex-col items-start">
-                  <Label className="text-white text-[10px] font-mono uppercase tracking-wider mb-1">Distribución</Label>
+                  <Label className="technical-label text-white mb-1">Distribución</Label>
                   <Popover open={openDist} onOpenChange={setOpenDist}>
                     <PopoverTrigger asChild>
                       <Button
@@ -356,7 +374,7 @@ export default function SimulatorPage() {
                                 key={dist.value}
                                 value={dist.value}
                                 onSelect={(currentValue) => {
-                                  setDistType(currentValue === distType ? "" : currentValue);
+                                  setDistType(currentValue as DistributionType);
                                   setOpenDist(false);
                                 }}
                                 className="text-white data-selected:bg-zinc-700 data-selected:text-white aria-selected:bg-zinc-700 cursor-pointer rounded-none! p-0"
@@ -380,16 +398,16 @@ export default function SimulatorPage() {
                 </div>
                 <div className="space-y-2 flex flex-col items-start">
                   <div className="flex items-center justify-start gap-1.5 h-4">
-                    <Label htmlFor="param" className="text-white text-[10px] font-mono tracking-wider uppercase">
+                    <Label htmlFor="param" className="technical-label text-white uppercase">
                       {distType === "Poisson" ? (
-                        <>Promedio de eventos<span className="normal-case">μ</span></>
+                        <>Promedio de eventos (<span className="normal-case">μ</span>)</>
                       ) : (
                         <>Tasa (<span className="normal-case">λ</span>)</>
                       )}
                     </Label>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <HelpCircle className="w-4 h-4 text-zinc-600" />
+                        <HelpCircle className="inline-help-icon" />
                       </TooltipTrigger>
                       <TooltipContent side="right">
                         {distType === "Poisson" ? "Mu (Promedio de ocurrencias)" : "Lambda (Tasa de frecuencia)"}
@@ -428,7 +446,7 @@ export default function SimulatorPage() {
 
               {/* Sección Tipo de Intervalo */}
               <div className="space-y-2 flex flex-col items-start">
-                <Label className="text-white text-[10px] font-mono uppercase tracking-wider mb-1">Tipo de Intervalo</Label>
+                <Label className="technical-label text-white mb-1">Tipo de Intervalo</Label>
                 <Popover open={openProb} onOpenChange={setOpenProb}>
                   <PopoverTrigger asChild>
                     <Button
@@ -453,7 +471,7 @@ export default function SimulatorPage() {
                               key={p.value}
                               value={p.value}
                               onSelect={(currentValue) => {
-                                setProbType(currentValue);
+                                setProbType(currentValue as ProbType);
                                 setOpenProb(false);
                               }}
                               className="text-white data-selected:bg-zinc-700 data-selected:text-white aria-selected:bg-zinc-700 cursor-pointer rounded-none! p-0"
@@ -480,10 +498,10 @@ export default function SimulatorPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2 flex flex-col items-start">
                   <div className="flex items-center justify-start gap-1.5">
-                    <Label className="text-white text-[10px] font-mono tracking-wider lowercase">xi</Label>
+                    <Label className="technical-label text-white lowercase">xi</Label>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <HelpCircle className="w-4 h-4 text-zinc-600" />
+                        <HelpCircle className="inline-help-icon" />
                       </TooltipTrigger>
                       <TooltipContent side="right">
                         Límite inferior del intervalo
@@ -518,10 +536,10 @@ export default function SimulatorPage() {
                 </div>
                 <div className="space-y-2 flex flex-col items-start">
                   <div className="flex items-center justify-start gap-1.5">
-                    <Label className="text-white text-[10px] font-mono tracking-wider lowercase">xj</Label>
+                    <Label className="technical-label text-white lowercase">xj</Label>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <HelpCircle className="w-4 h-4 text-zinc-600" />
+                        <HelpCircle className="inline-help-icon" />
                       </TooltipTrigger>
                       <TooltipContent side="right">
                         Límite superior del intervalo
@@ -569,7 +587,7 @@ export default function SimulatorPage() {
               {/* Resultado Final Integrado */}
               <div className="bg-zinc-950 border border-zinc-800 rounded-none flex flex-col items-center overflow-hidden">
                 <div className="p-3 flex flex-col items-center w-full bg-zinc-950">
-                  <span className="text-zinc-500 text-[10px] block mb-1 font-mono uppercase tracking-tighter">Probabilidad resultante</span>
+                  <span className="technical-caption text-zinc-500 block mb-1">Probabilidad resultante</span>
                   <span className="text-3xl font-normal text-white font-mono">
                     {hasCalculated 
                       ? precision > 0 
@@ -580,7 +598,7 @@ export default function SimulatorPage() {
                 </div>
                 
                 <div className="flex flex-col items-center space-y-1 border-t border-zinc-800 py-3 w-full bg-zinc-900/30">
-                  <span className="text-[9px] text-zinc-500 font-mono uppercase tracking-wider">Ajuste de precisión</span>
+                  <span className="technical-caption text-zinc-500">Ajuste de precisión</span>
                   <div className="flex items-center space-x-1">
                     <Input 
                       type="number" 
@@ -621,27 +639,25 @@ export default function SimulatorPage() {
             {/* Cuadro 2: Estadísticos */}
             <Card 
               key={`stats-${JSON.stringify(calculatedValues)}`}
-              className="bg-zinc-900 border-zinc-800 text-white rounded-xl relative flex flex-col flex-grow animate-in fade-in duration-700"
+              className={cn(
+                "bg-zinc-900 border-zinc-800 text-white rounded-xl relative flex flex-col flex-grow",
+                shouldRunEntryAnimations && "animate-in fade-in duration-700"
+              )}
             >
               <div className="absolute top-3 right-3">
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 p-0 hover:bg-zinc-800 rounded-full">
-                      <Info className="h-3.5 w-3.5 text-zinc-600" />
+                    <Button variant="ghost" size="icon" className="bento-info-trigger">
+                      <Info className="bento-info-icon" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent side="top" align="end" className="w-80 bg-zinc-900 border-zinc-800 text-zinc-300">
                     <div className="space-y-3">
                       <h4 className="font-mono text-xs uppercase tracking-wider text-white">Propiedades Estadísticas</h4>
-                      <p className="text-xs leading-relaxed">
+                      <p className="popover-copy">
                         Aquí se muestran las características matemáticas de la distribución actual, como el promedio, la variancia y la probabilidad puntual según los parámetros ingresados.
                       </p>
-                      <Link 
-                        href="/glossary" 
-                        className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-tight text-white hover:text-zinc-300 transition-colors border-t border-zinc-800 pt-2 w-full"
-                      >
-                        Ver en glosario <ExternalLink className="h-3 w-3" />
-                      </Link>
+                      <GlossaryPopoverLink href="/glossary#estadisticos" />
                     </div>
                   </PopoverContent>
                 </Popover>
@@ -651,7 +667,7 @@ export default function SimulatorPage() {
                   <Sigma className="w-4 h-4 text-zinc-500" />
                   Propiedades estadísticas
                 </CardTitle>
-                <CardDescription className="text-zinc-500 font-mono text-xs">
+                <CardDescription className="card-description-copy">
                   Análisis matemático de la distribución.
                 </CardDescription>
               </CardHeader>
@@ -661,7 +677,7 @@ export default function SimulatorPage() {
                   <div className="flex items-center justify-between border-b border-zinc-800/50 pb-2 relative group">
                     <div className="flex flex-col relative">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-white font-mono uppercase tracking-wider">
+                        <span className="technical-caption text-white">
                           {calculatedValues.distType === "Poisson" ? "Probabilidad Discreta" : "Densidad Prob."}
                         </span>
                       </div>
@@ -710,7 +726,10 @@ export default function SimulatorPage() {
             {/* Botón Generar Gráfica (Bloque Blanco) */}
             <Button 
               key={`btn-${JSON.stringify(calculatedValues)}`}
-              className="w-full bg-white text-black hover:bg-zinc-200 rounded-xl font-mono uppercase tracking-[0.2em] text-xs h-16 transition-all duration-500 animate-in fade-in duration-1000 delay-150 shrink-0"
+              className={cn(
+                "w-full bg-white text-black hover:bg-zinc-200 rounded-xl font-mono uppercase tracking-[0.2em] text-xs h-16 transition-all duration-500 shrink-0",
+                shouldRunEntryAnimations && "animate-in fade-in duration-1000 delay-150"
+              )}
               onClick={handleGenerateGraph}
             >
               Generar Gráfica
@@ -723,7 +742,10 @@ export default function SimulatorPage() {
       {showGraph && (
         <div 
           ref={graphRef}
-          className="mx-auto max-w-[920px] w-full mt-6 animate-in fade-in slide-in-from-bottom-12 duration-1000 ease-out"
+          className={cn(
+            "mx-auto max-w-[920px] w-full mt-6",
+            shouldRunEntryAnimations && "animate-in fade-in slide-in-from-bottom-12 duration-1000 ease-out"
+          )}
         >
           <Card className="bg-zinc-900 border-zinc-800 text-white rounded-xl overflow-hidden min-h-[500px] flex flex-col relative">
             {/* Overlay de Carga */}
@@ -746,20 +768,20 @@ export default function SimulatorPage() {
                     <BarChart3 className="w-4 h-4 text-zinc-500" />
                     Visualización de la Distribución
                   </CardTitle>
-                  <CardDescription className="text-zinc-500 font-mono text-xs">
+                  <CardDescription className="card-description-copy">
                     Representación de {graphValues.distType} con {graphValues.distType === "Poisson" ? "μ" : "λ"} = {graphValues.param}.
                   </CardDescription>
                 </div>
                 <TabsList className="bg-zinc-950 border border-zinc-800 h-9 p-1 rounded-lg">
                   <TabsTrigger 
                     value="prob" 
-                    className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 hover:text-white data-[state=active]:bg-zinc-800 data-[state=active]:text-white transition-colors h-7"
+                    className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 hover:text-white data-[state=active]:bg-zinc-800 data-[state=active]:text-white transition-colors h-7"
                   >
                     Masa/Densidad
                   </TabsTrigger>
                   <TabsTrigger 
                     value="accum" 
-                    className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 hover:text-white data-[state=active]:bg-zinc-800 data-[state=active]:text-white transition-colors h-7"
+                    className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 hover:text-white data-[state=active]:bg-zinc-800 data-[state=active]:text-white transition-colors h-7"
                   >
                     Acumulada
                   </TabsTrigger>
@@ -950,3 +972,4 @@ export default function SimulatorPage() {
     </div>
   );
 }
+

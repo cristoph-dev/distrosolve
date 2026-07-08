@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from 'react';
@@ -23,13 +22,28 @@ const Sidebar: React.FC = () => {
     },
     {
       id: 'queues',
-      label: 'Teoría de colas',
+      label: 'Teoria de colas',
       href: '/queues',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M7 15 2 9l5-6"/>
           <path d="M2 9h20"/>
           <path d="m17 9 5 6-5 6"/>
+        </svg>
+      )
+    },
+    {
+      id: 'montecarlo',
+      label: 'Simulación de Montecarlo',
+      href: '/montecarlo',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+          <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+          <circle cx="16" cy="16" r="1.5" fill="currentColor" />
+          <circle cx="8" cy="8" r="1.5" fill="currentColor" />
+          <circle cx="8" cy="16" r="1.5" fill="currentColor" />
+          <circle cx="16" cy="8" r="1.5" fill="currentColor" />
         </svg>
       )
     },
@@ -47,17 +61,17 @@ const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside 
+    <aside
       className={`bg-black border-r border-zinc-800 transition-all duration-300 ease-in-out flex flex-col h-full overflow-visible ${
         isOpen ? 'w-72' : 'w-20'
       }`}
     >
       {/* Toggle Button Container */}
       <div className="h-16 flex items-center justify-center w-20 flex-shrink-0">
-        <button 
+        <button
           onClick={toggleSidebar}
           className="text-zinc-400 hover:text-white hover:bg-zinc-900 p-2 rounded-lg transition-colors"
-          aria-label={isOpen ? "Colapsar menú" : "Expandir menú"}
+          aria-label={isOpen ? "Colapsar menu" : "Expandir menu"}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="3" y1="12" x2="21" y2="12"/>
@@ -81,9 +95,9 @@ const Sidebar: React.FC = () => {
                 {item.icon}
               </div>
             </div>
-            
+
             {/* Label - Absolute positioning or opacity transition to prevent layout shifts */}
-            <span 
+            <span
               className={`text-[14px] font-medium whitespace-nowrap transition-all duration-300 ease-in-out ${
                 isOpen ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 pointer-events-none'
               }`}

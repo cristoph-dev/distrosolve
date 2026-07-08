@@ -53,6 +53,7 @@ body {
 }
 
 :root {
+  --technical-label-size: 10px;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -154,5 +155,54 @@ body {
   * {
     scrollbar-width: thin;
     scrollbar-color: theme('colors.zinc.800') transparent;
+  }
+}
+
+@layer components {
+  .bento-info-trigger {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+    padding: 0 !important;
+    cursor: pointer;
+    background: transparent !important;
+    @apply rounded-full;
+  }
+
+  .bento-info-icon {
+    width: 1rem !important;
+    height: 1rem !important;
+    @apply text-zinc-300 transition-colors;
+  }
+
+  .bento-info-trigger:hover .bento-info-icon {
+    @apply text-zinc-100;
+  }
+
+  .inline-help-icon {
+    width: 1rem !important;
+    height: 1rem !important;
+    cursor: help;
+    @apply text-zinc-300 transition-colors hover:text-zinc-100;
+  }
+
+  .card-description-copy {
+    @apply font-mono text-xs leading-relaxed text-zinc-500;
+  }
+
+  .popover-copy {
+    @apply text-xs leading-relaxed;
+  }
+
+  .technical-label {
+    font-size: var(--technical-label-size) !important;
+    @apply font-mono uppercase tracking-wider;
+  }
+
+  .technical-caption {
+    @apply font-mono text-[11px] uppercase tracking-wider;
+  }
+
+  .glossary-popover-link {
+    @apply inline-flex w-full items-center gap-2 border-t border-zinc-800 pt-2 font-mono text-[11px] uppercase tracking-tight text-white transition-colors hover:text-zinc-300;
   }
 }
