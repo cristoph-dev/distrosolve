@@ -36,6 +36,18 @@ const Sidebar: React.FC = () => {
       )
     },
     {
+      id: 'single-server-queue',
+      label: 'Líneas de espera',
+      href: '/lineas-espera',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 6h12a4 4 0 0 1 0 8H8" />
+          <path d="M8 10 4 14l4 4" />
+          <path d="M20 18h-8" />
+        </svg>
+      )
+    },
+    {
       id: 'montecarlo',
       label: 'Simulación de Montecarlo',
       href: '/montecarlo',

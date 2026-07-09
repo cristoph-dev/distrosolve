@@ -47,3 +47,5 @@ read_file
 .CLAUDE.md  
 AGENTS.md
 CLAUDE.md  
+.vercel
+.env*

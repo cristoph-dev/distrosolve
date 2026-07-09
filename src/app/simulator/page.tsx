@@ -291,7 +291,7 @@ export default function SimulatorPage() {
   const placeholderProbability = `0.${'0'.repeat(precision)}%`;
 
   return (
-    <div className="p-4 md:p-6 space-y-6 mx-auto transition-all duration-700 pb-24">
+    <div className="p-4 md:p-6 space-y-6 mx-auto w-full transition-all duration-700 pb-24">
       <div className={cn(
         "flex flex-col space-y-4 mb-6 mx-auto transition-all duration-1000 ease-in-out",
         hasCalculated ? "max-w-[920px]" : "max-w-md"
@@ -745,11 +745,11 @@ export default function SimulatorPage() {
         <div 
           ref={graphRef}
           className={cn(
-            "mx-auto max-w-[920px] w-full mt-6",
+            "mx-auto mt-6 w-full max-w-full md:w-[920px]",
             shouldRunEntryAnimations && "animate-in fade-in slide-in-from-bottom-12 duration-1000 ease-out"
           )}
         >
-          <Card className="bg-zinc-900 border-zinc-800 text-white rounded-xl overflow-hidden min-h-[390px] sm:min-h-[500px] flex flex-col relative">
+          <Card className="bg-zinc-900 border-zinc-800 text-white rounded-xl overflow-hidden min-h-[360px] sm:min-h-[430px] flex flex-col relative w-full">
             {/* Overlay de Carga */}
             {isGraphLoading && (
               <div className="absolute inset-0 z-50 bg-zinc-900/60 backdrop-blur-[2px] flex flex-col items-center justify-center animate-in fade-in duration-300">
@@ -790,7 +790,7 @@ export default function SimulatorPage() {
                 </TabsList>
               </CardHeader>
               
-              <CardContent className="flex-grow p-3 pt-6 sm:p-6 sm:pt-10 h-[320px] sm:h-[400px]">
+              <CardContent className="flex-grow p-3 pt-6 sm:p-6 sm:pt-8 h-[290px] sm:h-[340px]">
                 <ChartContainer config={chartConfig} className="w-full h-full min-h-0 aspect-auto [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-zinc-800/50">
                   <TabsContent value="prob" className="m-0 w-full h-full">
                     {graphValues.distType === "Poisson" ? (

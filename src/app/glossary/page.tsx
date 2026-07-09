@@ -39,10 +39,26 @@ const exponentialData = Array.from({ length: 40 }, (_, i) => ({
   p: 0.5 * Math.exp(-0.5 * (i * 0.2))
 }));
 
+const sections = [
+  { id: 'conceptos', title: 'Conceptos Generales' },
+  { id: 'poisson', title: 'Distribución de Poisson' },
+  { id: 'exponencial', title: 'Distribución Exponencial' },
+  { id: 'estadisticos', title: 'Propiedades Estadísticas' },
+  { id: 'colas', title: 'Teoría de Colas' },
+  { id: 'lineas-espera', title: 'Líneas de Espera' },
+  { id: 'multiples-servidores', title: 'Múltiples Servidores' },
+  { id: 'metricas', title: 'Métricas de Desempeño' },
+];
+
 export default function GlossaryPage() {
+  const [activeSection, setActiveSection] = React.useState(sections[0].id);
+
   const scrollTo = React.useCallback((id: string, behavior: ScrollBehavior = 'smooth') => {
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior, block: 'start' });
+    if (el) {
+      setActiveSection(id);
+      el.scrollIntoView({ behavior, block: 'start' });
+    }
   }, []);
 
   React.useEffect(() => {
@@ -67,17 +83,33 @@ export default function GlossaryPage() {
     };
   }, [scrollTo]);
 
-  const sections = [
-    { id: 'conceptos', title: 'Conceptos Generales' },
-    { id: 'poisson', title: 'Distribución de Poisson' },
-    { id: 'exponencial', title: 'Distribución Exponencial' },
-    { id: 'estadisticos', title: 'Propiedades Estadísticas' },
-    { id: 'colas', title: 'Teoría de Colas' },
-    { id: 'metricas', title: 'Métricas de Desempeño' },
-  ];
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+        if (visible?.target.id) {
+          setActiveSection(visible.target.id);
+        }
+      },
+      {
+        rootMargin: '-20% 0px -55% 0px',
+        threshold: [0.1, 0.25, 0.5],
+      }
+    );
+
+    sections.forEach((section) => {
+      const el = document.getElementById(section.id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-black text-zinc-300 font-sans selection:bg-zinc-800 selection:text-white pb-32">
+    <div className="min-h-screen text-zinc-300 font-sans selection:bg-zinc-800 selection:text-white pb-32">
       {/* Hero Section */}
       <div className="max-w-3xl mx-auto pt-24 px-6 mb-20 text-center md:text-left">
         <div className="flex items-center gap-3 text-zinc-500 font-mono text-[10px] uppercase tracking-[0.3em] mb-6">
@@ -101,9 +133,15 @@ export default function GlossaryPage() {
               <button
                 key={s.id}
                 onClick={() => scrollTo(s.id)}
-                className="group flex items-center gap-3 px-3 py-2 text-sm text-zinc-500 hover:text-white hover:bg-zinc-900/50 rounded-lg transition-all text-left"
+                className={cn(
+                  "group flex items-center gap-3 px-3 py-2 text-sm hover:text-white hover:bg-zinc-900/50 rounded-lg transition-all text-left",
+                  activeSection === s.id ? "bg-zinc-900/70 text-white" : "text-zinc-500"
+                )}
               >
-                <div className="w-1.5 h-1.5 rounded-full bg-zinc-800 group-hover:bg-zinc-400 transition-colors" />
+                <div className={cn(
+                  "w-1.5 h-1.5 rounded-full transition-colors",
+                  activeSection === s.id ? "bg-white" : "bg-zinc-800 group-hover:bg-zinc-400"
+                )} />
                 {s.title}
               </button>
             ))}
@@ -281,6 +319,61 @@ export default function GlossaryPage() {
                 <p className="text-zinc-400 text-lg leading-relaxed">
                   Variación donde el sistema tiene una capacidad máxima <span className="font-mono text-zinc-200">K</span>. Si un cliente llega y el sistema está lleno, es rechazado (λ Perdida).
                 </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Section: Líneas de Espera */}
+          <section id="lineas-espera" className="mb-24 scroll-mt-24">
+            <h2 className="text-3xl font-medium text-white mb-8 border-b border-zinc-900 pb-4">Líneas de Espera</h2>
+            <p className="leading-relaxed text-zinc-400 text-lg mb-8">
+              Una línea de espera describe un sistema donde clientes, llamadas, tareas o entidades llegan, esperan si el servicio no está disponible y luego son atendidas por uno o varios servidores.
+            </p>
+            <div className="grid grid-cols-1 gap-6">
+              <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-xl">
+                <h3 className="text-lg font-medium text-zinc-100 mb-3">Un servidor: M/M/1 y M/M/1/K</h3>
+                <p className="text-zinc-400 leading-relaxed">
+                  El modelo M/M/1 usa una sola estación de servicio, llegadas Poisson y tiempos de servicio exponenciales. Si no hay límite, debe cumplirse <span className="font-mono text-zinc-200">λ &lt; μ</span>. En M/M/1/K existe una capacidad máxima del sistema y las llegadas pueden rechazarse cuando está lleno.
+                </p>
+              </div>
+              <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-xl">
+                <h3 className="text-lg font-medium text-zinc-100 mb-3">Capacidad K</h3>
+                <p className="text-zinc-400 leading-relaxed">
+                  K representa el número máximo de clientes permitidos dentro del sistema, incluyendo quienes esperan en cola y quienes están siendo atendidos. Cuando el sistema alcanza K, una llegada adicional se pierde.
+                </p>
+              </div>
+              <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-xl">
+                <h3 className="text-lg font-medium text-zinc-100 mb-3">Distribución P(n)</h3>
+                <p className="text-zinc-400 leading-relaxed">
+                  P(n) indica la probabilidad de observar exactamente n clientes en el sistema. Sirve para interpretar estados como sistema vacío, congestión moderada o sistema lleno.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Section: Múltiples Servidores */}
+          <section id="multiples-servidores" className="mb-24 scroll-mt-24">
+            <h2 className="text-3xl font-medium text-white mb-8 border-b border-zinc-900 pb-4">Múltiples Servidores</h2>
+            <p className="leading-relaxed text-zinc-400 text-lg mb-8">
+              Los modelos M/M/s representan sistemas con varios servidores paralelos. Todos comparten una misma cola y cada servidor atiende con tasa promedio <span className="font-mono text-zinc-200">μ</span>.
+            </p>
+            <div className="space-y-6">
+              <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-xl font-mono text-center">
+                <span className="text-zinc-500 block mb-2">Utilización multiserver</span>
+                <span className="text-xl text-white">ρ = λ / (sμ)</span>
+              </div>
+              <p className="text-zinc-400 leading-relaxed">
+                En M/M/s sin límite, el sistema es estable cuando <span className="font-mono text-zinc-200">λ &lt; sμ</span>. En M/M/s/K, la capacidad total K puede producir bloqueo: una parte de las llegadas no ingresa al sistema.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-5 rounded-xl border border-zinc-800 bg-zinc-900/30">
+                  <h4 className="font-mono text-xs uppercase tracking-wider text-white mb-2">λ efectiva</h4>
+                  <p className="text-zinc-400 leading-relaxed text-sm">Tasa real de clientes que sí entran al sistema después de descontar los bloqueos.</p>
+                </div>
+                <div className="p-5 rounded-xl border border-zinc-800 bg-zinc-900/30">
+                  <h4 className="font-mono text-xs uppercase tracking-wider text-white mb-2">λ perdida</h4>
+                  <p className="text-zinc-400 leading-relaxed text-sm">Tasa de clientes rechazados porque el sistema alcanzó su capacidad máxima.</p>
+                </div>
               </div>
             </div>
           </section>

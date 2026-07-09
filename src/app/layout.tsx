@@ -43,7 +43,7 @@ export default function RootLayout({
             <Header />
             <div className="flex flex-1 overflow-hidden">
               <Sidebar />
-              <main className="flex flex-1 flex-col overflow-y-auto bg-zinc-950/50">
+              <main className="flex flex-1 flex-col overflow-y-auto bg-[linear-gradient(180deg,#000_0%,#09090b_120px,rgba(9,9,11,0.5)_280px)]">
                 {children}
               </main>
             </div>
@@ -53,4 +53,3 @@ export default function RootLayout({
     </html>
   );
 }
-

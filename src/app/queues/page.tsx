@@ -144,7 +144,7 @@ export default function QueuesPage() {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-6 mx-auto transition-all duration-700 pb-24">
+    <div className="p-4 md:p-6 space-y-6 mx-auto w-full transition-all duration-700 pb-24">
       <div className={cn(
         "flex flex-col space-y-4 mb-6 mx-auto transition-all duration-1000 ease-in-out",
         hasCalculated ? "max-w-[920px]" : "max-w-md"
@@ -202,16 +202,22 @@ export default function QueuesPage() {
                 onValueChange={(val) => setModel(val as "mm1" | "mm1k")}
                 className="w-full"
               >
-                <TabsList className="bg-zinc-950 border border-zinc-800 w-full h-10 p-1 rounded-lg mb-6">
+                <TabsList className="relative bg-zinc-950 border border-zinc-800 w-full h-10 p-1 rounded-lg mb-6 overflow-hidden">
+                  <span
+                    className={cn(
+                      "pointer-events-none absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-md bg-zinc-800 transition-transform duration-300 ease-out",
+                      model === "mm1k" && "translate-x-full"
+                    )}
+                  />
                   <TabsTrigger 
                     value="mm1" 
-                    className="flex-1 text-[11px] font-mono uppercase tracking-wider text-zinc-500 hover:text-white data-[state=active]:bg-zinc-800 data-[state=active]:text-white transition-all"
+                    className="relative z-10 flex-1 bg-transparent text-[11px] font-mono uppercase tracking-wider text-zinc-500 hover:text-white data-[state=active]:bg-transparent data-[state=active]:text-white transition-colors"
                   >
                     Infinito (M/M/1)
                   </TabsTrigger>
                   <TabsTrigger 
                     value="mm1k" 
-                    className="flex-1 text-[11px] font-mono uppercase tracking-wider text-zinc-500 hover:text-white data-[state=active]:bg-zinc-800 data-[state=active]:text-white transition-all"
+                    className="relative z-10 flex-1 bg-transparent text-[11px] font-mono uppercase tracking-wider text-zinc-500 hover:text-white data-[state=active]:bg-transparent data-[state=active]:text-white transition-colors"
                   >
                     Finito (M/M/1/K)
                   </TabsTrigger>
@@ -467,11 +473,11 @@ export default function QueuesPage() {
         <div 
           ref={graphRef}
           className={cn(
-            "mx-auto max-w-[920px] w-full mt-6",
+            "mx-auto mt-6 w-full max-w-full md:w-[920px]",
             shouldRunEntryAnimations && "animate-in fade-in slide-in-from-bottom-12 duration-1000 ease-out"
           )}
         >
-          <Card className="bg-zinc-900 border-zinc-800 text-white rounded-xl overflow-hidden min-h-[360px] sm:min-h-[450px] flex flex-col relative">
+          <Card className="bg-zinc-900 border-zinc-800 text-white rounded-xl overflow-hidden min-h-[330px] sm:min-h-[390px] flex flex-col relative w-full">
             {/* Overlay de Carga */}
             {isGraphLoading && (
               <div className="absolute inset-0 z-50 bg-zinc-900/60 backdrop-blur-[2px] flex flex-col items-center justify-center animate-in fade-in duration-300">
@@ -496,7 +502,7 @@ export default function QueuesPage() {
             </CardHeader>
             <CardContent className="flex-grow p-3 pt-6 sm:p-6 sm:pt-10">
               {results && (
-                <div className="h-[270px] sm:h-[300px] w-full">
+                <div className="h-[245px] sm:h-[270px] w-full">
                   <ChartContainer config={chartConfig} className="w-full h-full min-h-0 aspect-auto [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-zinc-800/50">
                     <BarChart data={results.pn} margin={{ top: 10, right: 8, left: -24, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
