@@ -170,7 +170,7 @@ export default function MonteCarloPage() {
   }, [simResults, calcDistType, calcParam]);
 
   return (
-    <div className="p-6 space-y-6 mx-auto transition-all duration-700 pb-24">
+    <div className="p-4 md:p-6 space-y-6 mx-auto transition-all duration-700 pb-24">
       {/* Encabezado */}
       <div className={cn(
         "flex flex-col space-y-4 mb-6 mx-auto transition-all duration-1000 ease-in-out",
@@ -187,7 +187,7 @@ export default function MonteCarloPage() {
       </div>
 
       <div className={cn(
-        "flex flex-col md:flex-row justify-start items-stretch gap-0 transition-all duration-1000 ease-in-out mx-auto",
+        "flex flex-col md:flex-row justify-start items-stretch gap-6 md:gap-0 transition-all duration-1000 ease-in-out mx-auto",
         hasCalculated ? "max-w-[920px]" : "max-w-md"
       )}>
         
@@ -229,9 +229,11 @@ export default function MonteCarloPage() {
             <CardContent className="space-y-5 flex-grow pt-4 pb-0 overflow-visible">
               
               {/* Selector de Distribución */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2 flex flex-col items-start">
-                  <Label className="technical-label text-white mb-1">Distribución</Label>
+                  <div className="flex items-center justify-start h-4">
+                    <Label className="technical-label text-white">Distribución</Label>
+                  </div>
                   <Popover open={openDist} onOpenChange={setOpenDist}>
                     <PopoverTrigger asChild>
                       <Button
@@ -427,7 +429,7 @@ export default function MonteCarloPage() {
               </div>
 
               {/* Parámetros xi / xj */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2 flex flex-col items-start">
                   <div className="flex items-center justify-start gap-1.5">
                     <Label className="technical-label text-white lowercase">xi</Label>
@@ -558,7 +560,7 @@ export default function MonteCarloPage() {
           hasCalculated ? "w-full max-w-md opacity-100 overflow-visible" : "w-0 opacity-0 pointer-events-none overflow-hidden"
         )}>
           {simResults && (
-            <div className="w-[448px] h-full flex flex-col gap-6">
+            <div className="w-full h-full flex flex-col gap-6">
               
               {/* Cuadro de Estadísticos */}
               <Card 
@@ -701,7 +703,7 @@ export default function MonteCarloPage() {
             shouldRunEntryAnimations && "animate-in fade-in slide-in-from-bottom-12 duration-1000 ease-out"
           )}
         >
-          <Card className="bg-zinc-900 border-zinc-800 text-white rounded-xl overflow-hidden min-h-[500px] flex flex-col relative">
+          <Card className="bg-zinc-900 border-zinc-800 text-white rounded-xl overflow-hidden min-h-[390px] sm:min-h-[500px] flex flex-col relative">
             {isGraphLoading && (
               <div className="absolute inset-0 z-50 bg-zinc-900/60 backdrop-blur-[2px] flex flex-col items-center justify-center animate-in fade-in duration-300">
                 <div className="relative">
@@ -715,8 +717,8 @@ export default function MonteCarloPage() {
             )}
 
             <CardHeader className="border-b border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm">
-              <CardTitle className="text-sm font-normal flex items-center gap-2 font-mono text-white uppercase tracking-wider">
-                <BarChart3 className="w-4 h-4 text-zinc-500" />
+              <CardTitle className="text-sm font-normal flex items-center gap-2 font-mono text-white uppercase tracking-wider leading-snug">
+                <BarChart3 className="w-4 h-4 text-zinc-500 shrink-0" />
                 Histograma de Frecuencia y Curva Teórica
               </CardTitle>
               <CardDescription className="card-description-copy">
@@ -724,9 +726,9 @@ export default function MonteCarloPage() {
               </CardDescription>
             </CardHeader>
 
-            <CardContent className="flex-grow p-6 pt-10 h-[380px]">
-              <ChartContainer config={chartConfig} className="w-full h-full [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-zinc-800/50">
-                <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
+            <CardContent className="flex-grow p-3 pt-6 sm:p-6 sm:pt-10 h-[320px] sm:h-[380px]">
+              <ChartContainer config={chartConfig} className="w-full h-full min-h-0 aspect-auto [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-zinc-800/50">
+                <ComposedChart data={chartData} margin={{ top: 10, right: 8, left: -24, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                   <XAxis 
                     dataKey="binLabel" 

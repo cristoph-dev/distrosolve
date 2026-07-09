@@ -144,7 +144,7 @@ export default function QueuesPage() {
   };
 
   return (
-    <div className="p-6 space-y-6 mx-auto transition-all duration-700 pb-24">
+    <div className="p-4 md:p-6 space-y-6 mx-auto transition-all duration-700 pb-24">
       <div className={cn(
         "flex flex-col space-y-4 mb-6 mx-auto transition-all duration-1000 ease-in-out",
         hasCalculated ? "max-w-[920px]" : "max-w-md"
@@ -160,7 +160,7 @@ export default function QueuesPage() {
       </div>
 
       <div className={cn(
-        "flex flex-col md:flex-row justify-start items-start md:items-stretch gap-0 transition-all duration-1000 ease-in-out mx-auto",
+        "flex flex-col md:flex-row justify-start items-start md:items-stretch gap-6 md:gap-0 transition-all duration-1000 ease-in-out mx-auto",
         hasCalculated ? "max-w-[920px]" : "max-w-md"
       )}>
         {/* Columna Izquierda: Configuración */}
@@ -393,9 +393,9 @@ export default function QueuesPage() {
                   )}
                 >
                   {/* Línea divisoria vertical que va de arriba a abajo */}
-                  <div className="absolute top-0 bottom-0 left-1/2 w-[1px] bg-zinc-800 z-10" />
+                  <div className="absolute top-0 bottom-0 left-1/2 w-[1px] bg-zinc-800 z-10 hidden md:block" />
                   
-                  <div className="flex-1 min-h-0 grid grid-cols-2 border-b border-zinc-800">
+                  <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 border-b border-zinc-800">
                     <div className="grid min-h-0 grid-rows-[repeat(var(--metric-rows),minmax(0,1fr))] divide-y divide-zinc-800 [--metric-rows:3] has-[>[data-extra-metric]]:[--metric-rows:4]">
                       <MetricItem 
                         label="Utilización (Rho)" 
@@ -425,7 +425,7 @@ export default function QueuesPage() {
                         />
                       )}
                     </div>
-                    <div className="grid min-h-0 grid-rows-[repeat(var(--metric-rows),minmax(0,1fr))] divide-y divide-zinc-800 [--metric-rows:3] has-[>[data-extra-metric]]:[--metric-rows:4]">
+                    <div className="grid min-h-0 grid-rows-[repeat(var(--metric-rows),minmax(0,1fr))] divide-y divide-zinc-800 [--metric-rows:3] has-[>[data-extra-metric]]:[--metric-rows:4] border-t md:border-t-0 border-zinc-800">
                       <MetricItem 
                         label="Prob. Vacío (P0)" 
                         value={`${(results.p0 * 100).toFixed(2)}%`} 
@@ -471,7 +471,7 @@ export default function QueuesPage() {
             shouldRunEntryAnimations && "animate-in fade-in slide-in-from-bottom-12 duration-1000 ease-out"
           )}
         >
-          <Card className="bg-zinc-900 border-zinc-800 text-white rounded-xl overflow-hidden min-h-[450px] flex flex-col relative">
+          <Card className="bg-zinc-900 border-zinc-800 text-white rounded-xl overflow-hidden min-h-[360px] sm:min-h-[450px] flex flex-col relative">
             {/* Overlay de Carga */}
             {isGraphLoading && (
               <div className="absolute inset-0 z-50 bg-zinc-900/60 backdrop-blur-[2px] flex flex-col items-center justify-center animate-in fade-in duration-300">
@@ -486,19 +486,19 @@ export default function QueuesPage() {
             )}
 
             <CardHeader className="border-b border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm">
-              <CardTitle className="text-sm font-normal flex items-center gap-2 font-mono text-white uppercase tracking-wider">
-                <BarChart3 className="w-4 h-4 text-zinc-500" />
+              <CardTitle className="text-sm font-normal flex items-center gap-2 font-mono text-white uppercase tracking-wider leading-snug">
+                <BarChart3 className="w-4 h-4 text-zinc-500 shrink-0" />
                 Distribución de Probabilidad P(n)
               </CardTitle>
               <CardDescription className="card-description-copy">
                 Probabilidad de encontrar exactamente &apos;n&apos; clientes en el sistema.
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex-grow p-6 pt-10">
+            <CardContent className="flex-grow p-3 pt-6 sm:p-6 sm:pt-10">
               {results && (
-                <div className="h-[300px] w-full">
-                  <ChartContainer config={chartConfig} className="w-full h-full [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-zinc-800/50">
-                    <BarChart data={results.pn} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <div className="h-[270px] sm:h-[300px] w-full">
+                  <ChartContainer config={chartConfig} className="w-full h-full min-h-0 aspect-auto [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-zinc-800/50">
+                    <BarChart data={results.pn} margin={{ top: 10, right: 8, left: -24, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                       <XAxis 
                         dataKey="n" 

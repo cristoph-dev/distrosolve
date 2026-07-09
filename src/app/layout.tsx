@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SidebarProvider } from "../components/SidebarContext";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -38,15 +39,18 @@ export default function RootLayout({
     >
       <body className="h-full flex flex-col bg-black text-white">
         <TooltipProvider delayDuration={200}>
-          <Header />
-          <div className="flex flex-1 overflow-hidden">
-            <Sidebar />
-            <main className="flex flex-1 flex-col overflow-y-auto bg-zinc-950/50">
-              {children}
-            </main>
-          </div>
+          <SidebarProvider>
+            <Header />
+            <div className="flex flex-1 overflow-hidden">
+              <Sidebar />
+              <main className="flex flex-1 flex-col overflow-y-auto bg-zinc-950/50">
+                {children}
+              </main>
+            </div>
+          </SidebarProvider>
         </TooltipProvider>
       </body>
     </html>
   );
 }
+

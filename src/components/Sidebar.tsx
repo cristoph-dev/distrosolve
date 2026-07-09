@@ -2,9 +2,12 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { X } from 'lucide-react';
+import { useSidebarContext } from './SidebarContext';
 
 const Sidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { isMobileOpen, setMobileOpen } = useSidebarContext();
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -61,62 +64,85 @@ const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside
-      className={`bg-black border-r border-zinc-800 transition-all duration-300 ease-in-out flex flex-col h-full overflow-visible ${
-        isOpen ? 'w-72' : 'w-20'
-      }`}
-    >
-      {/* Toggle Button Container */}
-      <div className="h-16 flex items-center justify-center w-20 flex-shrink-0">
-        <button
-          onClick={toggleSidebar}
-          className="text-zinc-400 hover:text-white hover:bg-zinc-900 p-2 rounded-lg transition-colors"
-          aria-label={isOpen ? "Colapsar menu" : "Expandir menu"}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
-        </button>
-      </div>
+    <>
+      {/* Mobile Backdrop */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
 
-      {/* Navigation Items */}
-      <nav className="flex-1 space-y-2 mt-2">
-        {menuItems.map((item) => (
-          <Link
-            key={item.id}
-            href={item.href}
-            className="flex items-center w-full h-12 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-all group overflow-visible relative"
+      <aside
+        className={`bg-black border-r border-zinc-800 transition-all duration-300 ease-in-out flex flex-col h-full overflow-visible
+          fixed inset-y-0 left-0 z-50 md:relative md:translate-x-0
+          ${isMobileOpen ? 'translate-x-0 w-72' : '-translate-x-full md:translate-x-0'}
+          ${isOpen ? 'md:w-72' : 'md:w-20'}
+        `}
+      >
+        {/* Toggle Button Container */}
+        <div className="h-16 flex items-center justify-between px-4 md:justify-center w-full md:w-20 flex-shrink-0 border-b border-zinc-900 md:border-none">
+          <span className="text-sm font-mono font-bold tracking-tight md:hidden">distrosolve.app</span>
+
+          <button
+            onClick={toggleSidebar}
+            className="text-zinc-400 hover:text-white hover:bg-zinc-900 p-2 rounded-lg transition-colors hidden md:block cursor-pointer"
+            aria-label={isOpen ? "Colapsar menu" : "Expandir menu"}
           >
-            {/* Icon Container - Fixed 80px width to match collapsed sidebar */}
-            <div className="w-20 h-12 flex-shrink-0 flex items-center justify-center">
-              <div className="transition-transform group-hover:scale-110">
-                {item.icon}
-              </div>
-            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
 
-            {/* Label - Absolute positioning or opacity transition to prevent layout shifts */}
-            <span
-              className={`text-[14px] font-medium whitespace-nowrap transition-all duration-300 ease-in-out ${
-                isOpen ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 pointer-events-none'
-              }`}
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="text-zinc-400 hover:text-white hover:bg-zinc-900 p-2 rounded-lg transition-colors md:hidden cursor-pointer"
+            aria-label="Cerrar menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Navigation Items */}
+        <nav className="flex-1 space-y-2 mt-2">
+          {menuItems.map((item) => (
+            <Link
+              key={item.id}
+              href={item.href}
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center w-full h-12 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-all group overflow-visible relative"
             >
-              {item.label}
-            </span>
-
-            {/* Tooltip (Burbujita) - Only visible when sidebar is closed */}
-            {!isOpen && (
-              <div className="absolute left-full ml-4 px-3 py-1.5 bg-zinc-800/90 backdrop-blur-sm text-zinc-200 text-[13px] font-medium rounded-xl opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-zinc-700/50">
-                {item.label}
-                {/* Arrow (Rabito) */}
-                <div className="absolute top-1/2 -left-1.5 -translate-y-1/2 w-3 h-3 bg-zinc-800/90 border-l border-b border-zinc-700/50 rotate-45 backdrop-blur-sm"></div>
+              {/* Icon Container - Fixed 80px width to match collapsed sidebar */}
+              <div className="w-20 h-12 flex-shrink-0 flex items-center justify-center">
+                <div className="transition-transform group-hover:scale-110">
+                  {item.icon}
+                </div>
               </div>
-            )}
-          </Link>
-        ))}
-      </nav>
-    </aside>
+
+              {/* Label - Absolute positioning or opacity transition to prevent layout shifts */}
+              <span
+                className={`text-[14px] font-medium whitespace-nowrap transition-all duration-300 ease-in-out md:block
+                  ${isOpen ? 'opacity-100 translate-x-0' : 'md:opacity-0 md:-translate-x-4 md:pointer-events-none opacity-100 translate-x-0'}
+                `}
+              >
+                {item.label}
+              </span>
+
+              {/* Tooltip (Burbujita) - Only visible when sidebar is closed and not on mobile */}
+              {!isOpen && (
+                <div className="absolute left-full ml-4 px-3 py-1.5 bg-zinc-800/90 backdrop-blur-sm text-zinc-200 text-[13px] font-medium rounded-xl opacity-0 md:group-hover:opacity-100 translate-x-2 md:group-hover:translate-x-0 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-zinc-700/50 hidden md:block">
+                  {item.label}
+                  {/* Arrow (Rabito) */}
+                  <div className="absolute top-1/2 -left-1.5 -translate-y-1/2 w-3 h-3 bg-zinc-800/90 border-l border-b border-zinc-700/50 rotate-45 backdrop-blur-sm"></div>
+                </div>
+              )}
+            </Link>
+          ))}
+        </nav>
+      </aside>
+    </>
   );
 };
 

@@ -1,14 +1,29 @@
+"use client";
+
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Menu } from 'lucide-react';
+import { useSidebarContext } from './SidebarContext';
 
 const Header: React.FC = () => {
+  const { toggleMobile } = useSidebarContext();
+
   return (
-    <header className="bg-black text-white py-3 px-6 font-mono border-b border-zinc-800 w-full">
-      <div className="flex justify-between items-center w-full">
+    <header className="bg-black text-white py-3 px-4 md:px-6 font-mono border-b border-zinc-800 w-full">
+      <div className="relative flex items-center w-full">
         {/* Left Side */}
-        <div className="flex items-center space-x-3">
-          <Link href="/" className="flex items-center space-x-3 hover:opacity-90 transition-opacity" aria-label="Ir a inicio">
+        <div className="flex min-w-0 items-center space-x-3 pr-10 md:pr-0">
+          {/* Mobile Menu Button */}
+          <button
+            onClick={toggleMobile}
+            className="md:hidden text-zinc-400 hover:text-white p-2 hover:bg-zinc-900 rounded-lg transition-colors cursor-pointer"
+            aria-label="Abrir menú"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          <Link href="/" className="flex min-w-0 items-center space-x-3 hover:opacity-90 transition-opacity" aria-label="Ir a inicio">
             {/* Logo */}
             <div className="flex items-center justify-center overflow-hidden">
               <Image
@@ -20,21 +35,21 @@ const Header: React.FC = () => {
               />
             </div>
 
-            <span className="text-lg font-bold tracking-tight">
+            <span className="truncate text-lg font-bold tracking-tight">
               distrosolve<span className="text-zinc-500">.app</span>
             </span>
           </Link>
 
-          <div className="flex items-center space-x-3">
+          <div className="hidden items-center space-x-3 md:flex">
             <span className="text-zinc-600 font-light">|</span>
-            <span className="text-[13px] text-zinc-400 hidden md:inline">
+            <span className="text-[13px] text-zinc-400">
               Simulador de distribuciones de probabilidad
             </span>
           </div>
         </div>
 
         {/* Right Side */}
-        <div className="flex items-center space-x-6">
+        <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center md:static md:ml-auto md:translate-y-0">
           {/* GitHub Icon */}
           <a
             href="https://github.com/cristoph-dev/distrosolve"

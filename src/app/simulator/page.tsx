@@ -291,7 +291,7 @@ export default function SimulatorPage() {
   const placeholderProbability = `0.${'0'.repeat(precision)}%`;
 
   return (
-    <div className="p-6 space-y-6 mx-auto transition-all duration-700 pb-24">
+    <div className="p-4 md:p-6 space-y-6 mx-auto transition-all duration-700 pb-24">
       <div className={cn(
         "flex flex-col space-y-4 mb-6 mx-auto transition-all duration-1000 ease-in-out",
         hasCalculated ? "max-w-[920px]" : "max-w-md"
@@ -307,7 +307,7 @@ export default function SimulatorPage() {
       </div>
 
       <div className={cn(
-        "flex flex-col md:flex-row justify-start items-stretch gap-0 transition-all duration-1000 ease-in-out mx-auto",
+        "flex flex-col md:flex-row justify-start items-stretch gap-6 md:gap-0 transition-all duration-1000 ease-in-out mx-auto",
         hasCalculated ? "max-w-[920px]" : "max-w-md"
       )}>
         
@@ -347,9 +347,11 @@ export default function SimulatorPage() {
             </CardHeader>
             <CardContent className="space-y-6 flex-grow pt-4 pb-0 overflow-visible">
               {/* Sección Configuración */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2 flex flex-col items-start">
-                  <Label className="technical-label text-white mb-1">Distribución</Label>
+                  <div className="flex items-center justify-start h-4">
+                    <Label className="technical-label text-white">Distribución</Label>
+                  </div>
                   <Popover open={openDist} onOpenChange={setOpenDist}>
                     <PopoverTrigger asChild>
                       <Button
@@ -398,7 +400,7 @@ export default function SimulatorPage() {
                 </div>
                 <div className="space-y-2 flex flex-col items-start">
                   <div className="flex items-center justify-start gap-1.5 h-4">
-                    <Label htmlFor="param" className="technical-label text-white uppercase">
+                    <Label htmlFor="param" className="technical-label text-white uppercase whitespace-nowrap">
                       {distType === "Poisson" ? (
                         <>Promedio de eventos (<span className="normal-case">μ</span>)</>
                       ) : (
@@ -495,7 +497,7 @@ export default function SimulatorPage() {
               </div>
 
               {/* Sección xi y xj */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2 flex flex-col items-start">
                   <div className="flex items-center justify-start gap-1.5">
                     <Label className="technical-label text-white lowercase">xi</Label>
@@ -635,7 +637,7 @@ export default function SimulatorPage() {
           "transition-all duration-700 ease-in-out shrink-0 flex flex-col",
           hasCalculated ? "w-full max-w-md opacity-100 overflow-visible" : "w-0 opacity-0 pointer-events-none overflow-hidden"
         )}>
-          <div className="w-[448px] h-full flex flex-col gap-6"> {/* Ancho fijo y h-full */}
+          <div className="w-full h-full flex flex-col gap-6">
             {/* Cuadro 2: Estadísticos */}
             <Card 
               key={`stats-${JSON.stringify(calculatedValues)}`}
@@ -747,7 +749,7 @@ export default function SimulatorPage() {
             shouldRunEntryAnimations && "animate-in fade-in slide-in-from-bottom-12 duration-1000 ease-out"
           )}
         >
-          <Card className="bg-zinc-900 border-zinc-800 text-white rounded-xl overflow-hidden min-h-[500px] flex flex-col relative">
+          <Card className="bg-zinc-900 border-zinc-800 text-white rounded-xl overflow-hidden min-h-[390px] sm:min-h-[500px] flex flex-col relative">
             {/* Overlay de Carga */}
             {isGraphLoading && (
               <div className="absolute inset-0 z-50 bg-zinc-900/60 backdrop-blur-[2px] flex flex-col items-center justify-center animate-in fade-in duration-300">
@@ -762,37 +764,37 @@ export default function SimulatorPage() {
             )}
 
             <Tabs defaultValue="prob" className="w-full flex flex-col h-full">
-              <CardHeader className="border-b border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm flex flex-row items-center justify-between space-y-0">
-                <div className="space-y-1">
-                  <CardTitle className="text-sm font-normal flex items-center gap-2 font-mono text-white uppercase tracking-wider">
-                    <BarChart3 className="w-4 h-4 text-zinc-500" />
+              <CardHeader className="border-b border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 space-y-0">
+                <div className="space-y-1 min-w-0">
+                  <CardTitle className="text-sm font-normal flex items-center gap-2 font-mono text-white uppercase tracking-wider leading-snug">
+                    <BarChart3 className="w-4 h-4 text-zinc-500 shrink-0" />
                     Visualización de la Distribución
                   </CardTitle>
                   <CardDescription className="card-description-copy">
                     Representación de {graphValues.distType} con {graphValues.distType === "Poisson" ? "μ" : "λ"} = {graphValues.param}.
                   </CardDescription>
                 </div>
-                <TabsList className="bg-zinc-950 border border-zinc-800 h-9 p-1 rounded-lg">
+                <TabsList className="bg-zinc-950 border border-zinc-800 h-9 p-1 rounded-lg w-full sm:w-auto">
                   <TabsTrigger 
                     value="prob" 
-                    className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 hover:text-white data-[state=active]:bg-zinc-800 data-[state=active]:text-white transition-colors h-7"
+                    className="flex-1 sm:flex-none text-[11px] font-mono uppercase tracking-wider text-zinc-500 hover:text-white data-[state=active]:bg-zinc-800 data-[state=active]:text-white transition-colors h-7"
                   >
                     Masa/Densidad
                   </TabsTrigger>
                   <TabsTrigger 
                     value="accum" 
-                    className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 hover:text-white data-[state=active]:bg-zinc-800 data-[state=active]:text-white transition-colors h-7"
+                    className="flex-1 sm:flex-none text-[11px] font-mono uppercase tracking-wider text-zinc-500 hover:text-white data-[state=active]:bg-zinc-800 data-[state=active]:text-white transition-colors h-7"
                   >
                     Acumulada
                   </TabsTrigger>
                 </TabsList>
               </CardHeader>
               
-              <CardContent className="flex-grow p-6 pt-10 h-[400px]">
-                <ChartContainer config={chartConfig} className="w-full h-full [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-zinc-800/50">
+              <CardContent className="flex-grow p-3 pt-6 sm:p-6 sm:pt-10 h-[320px] sm:h-[400px]">
+                <ChartContainer config={chartConfig} className="w-full h-full min-h-0 aspect-auto [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-zinc-800/50">
                   <TabsContent value="prob" className="m-0 w-full h-full">
                     {graphValues.distType === "Poisson" ? (
-                      <BarChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
+                      <BarChart data={chartData} margin={{ top: 10, right: 12, left: -12, bottom: 20 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                         <XAxis 
                           dataKey="x" 
@@ -832,7 +834,7 @@ export default function SimulatorPage() {
                         </Bar>
                       </BarChart>
                     ) : (
-                      <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
+                      <AreaChart data={chartData} margin={{ top: 10, right: 12, left: -12, bottom: 20 }}>
                         <defs>
                           <linearGradient id="fillProb" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="#ffffff" stopOpacity={0.3}/>
@@ -885,7 +887,7 @@ export default function SimulatorPage() {
                   
                   <TabsContent value="accum" className="m-0 w-full h-full">
                     {graphValues.distType === "Poisson" ? (
-                      <LineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
+                      <LineChart data={chartData} margin={{ top: 10, right: 12, left: -12, bottom: 20 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                         <XAxis 
                           dataKey="x" 
@@ -921,7 +923,7 @@ export default function SimulatorPage() {
                         />
                       </LineChart>
                     ) : (
-                      <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
+                      <AreaChart data={chartData} margin={{ top: 10, right: 12, left: -12, bottom: 20 }}>
                         <defs>
                           <linearGradient id="fillAccum" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="#ffffff" stopOpacity={0.2}/>
