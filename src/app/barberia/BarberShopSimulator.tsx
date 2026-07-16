@@ -128,7 +128,7 @@ export default function BarberShopSimulator() {
   }
 
   return (
-    <div className="min-h-svh bg-[radial-gradient(circle_at_70%_8%,rgba(109,78,50,0.22)_0%,transparent_32%),linear-gradient(180deg,#15110e_0%,#0d0c0b_42%,#15110e_100%)] text-[#f5f2eb] selection:bg-[#d6b98c] selection:text-black">
+    <div className="min-h-svh bg-[linear-gradient(180deg,#0D0C0B_0%,#090807_48%,#000000_100%)] text-[#f5f2eb] selection:bg-[#d6b98c] selection:text-black">
       <header className="border-b border-white/10 bg-[linear-gradient(180deg,rgba(30,24,19,0.96)_0%,rgba(18,16,14,0.88)_100%)] px-4 py-4 backdrop-blur md:px-7">
         <div className="mx-auto flex max-w-[1500px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
