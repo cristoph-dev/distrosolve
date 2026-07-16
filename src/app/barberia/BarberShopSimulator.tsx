@@ -106,10 +106,11 @@ export default function BarberShopSimulator() {
 
   function downloadReport() {
     if (!report) return;
-    const header = "cliente,estado,entre_llegadas,llegada,inicio_servicio,tiempo_servicio,salida,espera,sistema";
+    const header = "cliente,estado,visito_barra,entre_llegadas,llegada,inicio_servicio,tiempo_servicio,salida,espera,sistema";
     const rows = report.records.map((client) => [
       client.id,
       client.status,
+      client.visitedBar ? "si" : "no",
       fixed(client.interarrivalTime),
       fixed(client.arrivalTime),
       client.serviceStart === undefined ? "" : fixed(client.serviceStart),
@@ -127,8 +128,8 @@ export default function BarberShopSimulator() {
   }
 
   return (
-    <div className="min-h-svh bg-[#0d0c0b] text-[#f5f2eb] selection:bg-[#d6b98c] selection:text-black">
-      <header className="border-b border-white/10 bg-[#12100e]/95 px-4 py-4 backdrop-blur md:px-7">
+    <div className="min-h-svh bg-[radial-gradient(circle_at_70%_8%,rgba(109,78,50,0.22)_0%,transparent_32%),linear-gradient(180deg,#15110e_0%,#0d0c0b_42%,#15110e_100%)] text-[#f5f2eb] selection:bg-[#d6b98c] selection:text-black">
+      <header className="border-b border-white/10 bg-[linear-gradient(180deg,rgba(30,24,19,0.96)_0%,rgba(18,16,14,0.88)_100%)] px-4 py-4 backdrop-blur md:px-7">
         <div className="mx-auto flex max-w-[1500px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <div className="grid h-10 w-10 place-items-center rounded-full border border-[#d6b98c]/50 bg-black/30"><Scissors className="h-5 w-5 text-[#d6b98c]" /></div>
@@ -163,7 +164,7 @@ export default function BarberShopSimulator() {
               {error && <p role="alert" className="rounded-lg border border-red-400/25 bg-red-950/20 p-3 text-xs text-red-200">{error}</p>}
               {phase === "idle" && <ActionButton onClick={startSimulation} icon={Play}>Iniciar simulación</ActionButton>}
               {phase === "running" && <ActionButton onClick={stopSimulation} icon={Pause} danger>Detener y reportar</ActionButton>}
-              {phase === "stopped" && <div className="grid grid-cols-2 gap-2"><ActionButton onClick={startSimulation} icon={Play}>Nueva</ActionButton><ActionButton onClick={resetSimulation} icon={RotateCcw} secondary>Limpiar</ActionButton></div>}
+              {phase === "stopped" && <div className="space-y-2"><div className="grid grid-cols-2 gap-2"><ActionButton onClick={startSimulation} icon={Play}>Nueva</ActionButton><ActionButton onClick={resetSimulation} icon={RotateCcw} secondary>Reiniciar</ActionButton></div><ActionButton onClick={() => window.print()} icon={Download}>Descargar PDF</ActionButton></div>}
             </div>
           </section>
         </aside>
@@ -180,10 +181,12 @@ export default function BarberShopSimulator() {
 
 function BarberShopScene({ snapshot, waitingClients, recentClients, configuredChairs }: { snapshot: BarberShopState | null; waitingClients: BarberClient[]; recentClients: BarberClient[]; configuredChairs: number }) {
   const chairs = snapshot?.servers ?? Array.from({ length: configuredChairs }, () => null);
+  const clientsAtBar = waitingClients.filter((client) => client.atBar);
+  const clientsInSeats = waitingClients.filter((client) => !client.atBar);
   return (
     <section className="print:hidden overflow-hidden rounded-2xl border border-white/10 bg-[#171411] shadow-2xl shadow-black/30">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-5 py-4"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#d6b98c]">Vista dron</p><h2 className="mt-1 text-lg font-medium">Escenografía general</h2></div><div className="font-mono text-xs text-white/45">{formatClock(snapshot?.clock ?? 0)}</div></div>
-      <div className="relative min-h-[600px] overflow-hidden bg-[#29231d] p-4 sm:p-6">
+      <div className="relative min-h-[600px] overflow-hidden bg-[radial-gradient(circle_at_30%_10%,#3b3027_0%,#29231d_38%,#171411_100%)] p-4 sm:p-6">
         <div className="pointer-events-none absolute inset-0 opacity-25 [background-image:linear-gradient(90deg,rgba(255,255,255,.05)_1px,transparent_1px),linear-gradient(rgba(255,255,255,.05)_1px,transparent_1px)] [background-size:32px_32px]" />
         <div className="relative grid min-h-[550px] gap-4 lg:grid-cols-[1fr_240px]">
           <div className="grid gap-4 sm:grid-rows-[1fr_150px]">
@@ -194,8 +197,8 @@ function BarberShopScene({ snapshot, waitingClients, recentClients, configuredCh
               </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-[1fr_0.8fr]">
-              <div className="rounded-xl border border-white/10 bg-[#1b1815] p-4"><div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-white/55"><Users className="h-4 w-4" /> Área de espera <span className="ml-auto text-[#d6b98c]">{waitingClients.length}</span></div><div className="mt-4 flex min-h-16 flex-wrap content-start gap-2">{waitingClients.length ? waitingClients.slice(0, 18).map((client) => <ClientToken key={client.id} client={client} />) : <span className="text-xs text-white/25">Asientos disponibles</span>}</div></div>
-              <div className="rounded-xl border border-white/10 bg-[#201914] p-4"><div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-white/55"><Coffee className="h-4 w-4" /> Barra</div><div className="mt-4 h-14 rounded-md border border-[#d6b98c]/25 bg-[#5a4029] shadow-[inset_0_8px_16px_rgba(0,0,0,.35)]" /><p className="mt-3 text-[10px] text-white/30">Recepción · bebidas · caja</p></div>
+              <div className="rounded-xl border border-white/10 bg-[#1b1815] p-4"><div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-white/55"><Users className="h-4 w-4" /> Área de espera <span className="ml-auto text-[#d6b98c]">{waitingClients.length}</span></div><div className="mt-4 flex min-h-16 flex-wrap content-start gap-2">{clientsInSeats.length ? clientsInSeats.slice(0, 18).map((client) => <ClientToken key={client.id} client={client} />) : <span className="text-xs text-white/25">Asientos disponibles</span>}</div></div>
+              <div className="rounded-xl border border-white/10 bg-[#201914] p-4"><div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-white/55"><Coffee className="h-4 w-4" /> Barra <span className="ml-auto text-[#d6b98c]">{clientsAtBar.length}/4</span></div><div className="relative mt-4 flex h-14 items-center gap-2 rounded-md border border-[#d6b98c]/25 bg-[#5a4029] px-3 shadow-[inset_0_8px_16px_rgba(0,0,0,.35)]">{clientsAtBar.length ? clientsAtBar.map((client) => <div key={client.id} className="grid h-8 w-8 animate-in zoom-in place-items-center rounded-full border-2 border-[#ead7b8] bg-[#2d241c] font-mono text-[9px] text-white shadow-lg">{client.id}</div>) : <span className="font-mono text-[9px] uppercase tracking-wider text-white/25">Barra disponible</span>}</div><p className="mt-3 text-[10px] text-white/30">Los clientes conservan su posición en la cola.</p></div>
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 lg:grid-rows-[180px_1fr]">
@@ -233,14 +236,15 @@ function Report({ report, config, onDownload }: { report: BarberShopReport; conf
     ["Tiempo prom. sistema", `${fixed(report.averageSystemTime)} min`], ["Clientes prom. cola", fixed(report.averageQueueLength)],
     ["Clientes prom. sistema", fixed(report.averageSystemLength)], ["λ efectiva", fixed(report.effectiveLambda)],
     ["λ perdida", fixed(report.lostLambda)], ["Servidores activos", fixed(report.averageActiveServers)],
-    ["Servidores inactivos", fixed(report.averageInactiveServers)], ["Completados", String(report.completed)],
+    ["Servidores inactivos", fixed(report.averageInactiveServers)], ["Visitas a la barra", String(report.beverageVisits)],
+    ["Completados", String(report.completed)],
   ];
   return <section id="barber-report" className="animate-in fade-in slide-in-from-bottom-4 rounded-2xl border border-white/10 bg-[#171411] p-5 duration-700 print:rounded-none print:border-0 print:bg-white print:text-black sm:p-7">
     <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/10 pb-5 print:border-black/20"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#d6b98c] print:text-black/60">Reporte final</p><h2 className="mt-2 text-2xl font-medium">Desempeño de la barbería</h2><p className="mt-2 text-xs text-white/45 print:text-black/60">{config.chairs} sillas · λ={config.lambda} · μ={config.mu} · {config.limitedQueue ? `cola límite ${config.queueLimit}` : "cola sin límite"} · {fixed(report.elapsedMinutes)} min</p></div><div className="flex gap-2 print:hidden"><button onClick={onDownload} className="inline-flex h-9 items-center gap-2 rounded-lg border border-white/15 px-3 font-mono text-[10px] uppercase text-white/70 hover:bg-white/10"><Download className="h-3.5 w-3.5" /> CSV</button><button onClick={() => window.print()} className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#d6b98c] px-3 font-mono text-[10px] uppercase text-black hover:bg-[#e2c99f]"><Printer className="h-3.5 w-3.5" /> Imprimir / PDF</button></div></div>
     <div className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 print:border-black/20 print:bg-black/20 sm:grid-cols-5">{metrics.map(([label, value]) => <div key={label} className="bg-[#11100e] p-4 print:bg-white"><div className="font-mono text-[9px] uppercase tracking-wider text-white/40 print:text-black/50">{label}</div><div className="mt-2 font-mono text-lg text-white print:text-black">{value}</div></div>)}</div>
     <div className="mt-7 grid gap-7 xl:grid-cols-[0.6fr_1.4fr]">
       <div><h3 className="font-mono text-xs uppercase tracking-wider">Probabilidades P(n)</h3><div className="mt-3 max-h-80 overflow-auto rounded-lg border border-white/10 print:max-h-none print:border-black/20"><table className="w-full border-collapse font-mono text-xs"><thead><tr className="bg-black/25 print:bg-black/5"><th className="p-2 text-left">n</th><th className="p-2 text-right">Probabilidad</th></tr></thead><tbody>{report.probabilities.map((row) => <tr key={row.n} className="border-t border-white/5 print:border-black/10"><td className="p-2">{row.n}</td><td className="p-2 text-right">{row.probability.toFixed(4)}</td></tr>)}</tbody></table></div></div>
-      <div><h3 className="font-mono text-xs uppercase tracking-wider">Registro individual</h3><div className="mt-3 max-h-80 overflow-auto rounded-lg border border-white/10 print:max-h-none print:border-black/20"><table className="w-full min-w-[760px] border-collapse font-mono text-[10px]"><thead><tr className="bg-black/25 print:bg-black/5">{["Cliente", "Estado", "Entre llegadas", "Llegada", "Servicio", "Inicio", "Salida", "Espera"].map((label) => <th key={label} className="p-2 text-right first:text-left">{label}</th>)}</tr></thead><tbody>{report.records.map((client) => <tr key={client.id} className="border-t border-white/5 print:border-black/10"><td className="p-2">{client.id}</td><td className="p-2 text-right">{statusLabel(client.status)}</td><td className="p-2 text-right">{fixed(client.interarrivalTime)}</td><td className="p-2 text-right">{fixed(client.arrivalTime)}</td><td className="p-2 text-right">{fixed(client.serviceTime)}</td><td className="p-2 text-right">{client.serviceStart === undefined ? "—" : fixed(client.serviceStart)}</td><td className="p-2 text-right">{client.departureTime === undefined ? "—" : fixed(client.departureTime)}</td><td className="p-2 text-right">{client.serviceStart === undefined ? "—" : fixed(client.serviceStart - client.arrivalTime)}</td></tr>)}</tbody></table></div></div>
+      <div><h3 className="font-mono text-xs uppercase tracking-wider">Registro individual</h3><div className="mt-3 max-h-80 overflow-auto rounded-lg border border-white/10 print:max-h-none print:border-black/20"><table className="w-full min-w-[820px] border-collapse font-mono text-[10px]"><thead><tr className="bg-black/25 print:bg-black/5">{["Cliente", "Estado", "Barra", "Entre llegadas", "Llegada", "Servicio", "Inicio", "Salida", "Espera"].map((label) => <th key={label} className="p-2 text-right first:text-left">{label}</th>)}</tr></thead><tbody>{report.records.map((client) => <tr key={client.id} className="border-t border-white/5 print:border-black/10"><td className="p-2">{client.id}</td><td className="p-2 text-right">{statusLabel(client.status)}</td><td className="p-2 text-right">{client.visitedBar ? "Sí" : "No"}</td><td className="p-2 text-right">{fixed(client.interarrivalTime)}</td><td className="p-2 text-right">{fixed(client.arrivalTime)}</td><td className="p-2 text-right">{fixed(client.serviceTime)}</td><td className="p-2 text-right">{client.serviceStart === undefined ? "—" : fixed(client.serviceStart)}</td><td className="p-2 text-right">{client.departureTime === undefined ? "—" : fixed(client.departureTime)}</td><td className="p-2 text-right">{client.serviceStart === undefined ? "—" : fixed(client.serviceStart - client.arrivalTime)}</td></tr>)}</tbody></table></div></div>
     </div>
   </section>;
 }

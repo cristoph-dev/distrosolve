@@ -17,6 +17,9 @@ export interface BarberClient {
   departureTime?: number;
   serverIndex?: number;
   remainingService: number;
+  visitedBar: boolean;
+  atBar: boolean;
+  remainingBarTime: number;
   status: BarberClientStatus;
 }
 
@@ -51,6 +54,7 @@ export interface BarberShopReport {
   completed: number;
   accepted: number;
   rejected: number;
+  beverageVisits: number;
   probabilities: Array<{ n: number; probability: number }>;
   records: BarberClient[];
 }
@@ -106,6 +110,8 @@ function assignWaitingClients(state: BarberShopState) {
     const client = waiting.shift();
     if (!client) break;
     client.status = "serving";
+    client.atBar = false;
+    client.remainingBarTime = 0;
     client.serviceStart = state.clock;
     client.serverIndex = serverIndex;
     state.servers[serverIndex] = client.id;
@@ -125,6 +131,13 @@ export function advanceBarberShopState(state: BarberShopState, deltaMinutes: num
   state.clock += deltaMinutes;
 
   for (const client of state.clients) {
+    if (client.status === "waiting" && client.atBar) {
+      client.remainingBarTime -= deltaMinutes;
+      if (client.remainingBarTime <= 0) {
+        client.atBar = false;
+        client.remainingBarTime = 0;
+      }
+    }
     if (client.status !== "serving") continue;
     client.remainingService -= deltaMinutes;
     if (client.remainingService > 0) continue;
@@ -140,13 +153,18 @@ export function advanceBarberShopState(state: BarberShopState, deltaMinutes: num
     const serviceTime = randomExponential(state.config.mu, random);
     const freeServer = state.servers.findIndex((clientId) => clientId === null);
     const currentWaiting = state.clients.filter((client) => client.status === "waiting").length;
+    const clientsAtBar = state.clients.filter((client) => client.status === "waiting" && client.atBar).length;
     const rejected = freeServer < 0 && state.config.limitedQueue && currentWaiting >= state.config.queueLimit;
+    const visitsBar = !rejected && freeServer < 0 && clientsAtBar < 4 && random() < 0.35;
     const client: BarberClient = {
       id: state.nextClientId++,
       arrivalTime,
       interarrivalTime,
       serviceTime,
       remainingService: serviceTime,
+      visitedBar: visitsBar,
+      atBar: visitsBar,
+      remainingBarTime: visitsBar ? 1 + random() * 3 : 0,
       status: rejected ? "rejected" : freeServer >= 0 ? "serving" : "waiting",
     };
 
@@ -193,6 +211,7 @@ export function buildBarberShopReport(state: BarberShopState): BarberShopReport 
     completed: completed.length,
     accepted: state.accepted,
     rejected: state.rejected,
+    beverageVisits: state.clients.filter((client) => client.visitedBar).length,
     probabilities: Array.from({ length: maxN + 1 }, (_, n) => ({
       n,
       probability: (state.stateDurations[n] ?? 0) / elapsed,
