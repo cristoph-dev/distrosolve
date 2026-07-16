@@ -44,6 +44,7 @@ const sections = [
   { id: 'poisson', title: 'Distribución de Poisson' },
   { id: 'exponencial', title: 'Distribución Exponencial' },
   { id: 'estadisticos', title: 'Propiedades Estadísticas' },
+  { id: 'monte-carlo', title: 'Simulación de Monte Carlo' },
   { id: 'colas', title: 'Teoría de Colas' },
   { id: 'lineas-espera', title: 'Líneas de Espera' },
   { id: 'multiples-servidores', title: 'Múltiples Servidores' },
@@ -264,6 +265,40 @@ export default function GlossaryPage() {
                   <p className="text-zinc-400 leading-relaxed">{item.desc}</p>
                 </div>
               ))}
+            </div>
+          </section>
+
+          {/* Section: Monte Carlo */}
+          <section id="monte-carlo" className="mb-24 scroll-mt-24">
+            <h2 className="text-3xl font-medium text-white mb-8 border-b border-zinc-900 pb-4">Simulación de Monte Carlo</h2>
+            <p className="leading-relaxed text-zinc-400 text-lg mb-8">
+              Es un método numérico que utiliza números aleatorios para reproducir muchas observaciones de un fenómeno probabilístico. En distrosolve.app, cada variable simulada forma una columna independiente y cada observación representa una fila de la base de datos.
+            </p>
+            <div className="grid grid-cols-1 gap-6">
+              <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-xl">
+                <h3 className="text-lg font-medium text-zinc-100 mb-3">Parámetro λ</h3>
+                <p className="text-zinc-400 leading-relaxed">
+                  En Poisson, λ es el número promedio de eventos por intervalo. En la distribución Exponencial, λ es la tasa de ocurrencia y su media teórica es <span className="font-mono text-zinc-200">1 / λ</span>.
+                </p>
+              </div>
+              <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-xl">
+                <h3 className="text-lg font-medium text-zinc-100 mb-3">Variables y observaciones</h3>
+                <p className="text-zinc-400 leading-relaxed">
+                  La cantidad de variables determina el número de columnas independientes. La cantidad de observaciones determina cuántos valores se generan para cada columna. El total de datos es <span className="font-mono text-zinc-200">variables × observaciones</span>.
+                </p>
+              </div>
+              <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-xl">
+                <h3 className="text-lg font-medium text-zinc-100 mb-3">Resultado muestral y valor teórico</h3>
+                <p className="text-zinc-400 leading-relaxed">
+                  Los estadísticos muestrales se calculan a partir de los datos generados. No tienen que coincidir exactamente con los valores teóricos, pero normalmente se aproximan a ellos al aumentar el número de observaciones.
+                </p>
+              </div>
+              <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-xl">
+                <h3 className="text-lg font-medium text-zinc-100 mb-3">Histograma comparativo</h3>
+                <p className="text-zinc-400 leading-relaxed">
+                  Compara la frecuencia relativa observada con la probabilidad esperada por el modelo. Las diferencias entre ambas son producto de la variabilidad aleatoria de una muestra finita.
+                </p>
+              </div>
             </div>
           </section>
 

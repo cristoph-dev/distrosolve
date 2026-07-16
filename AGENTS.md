@@ -21,6 +21,7 @@ distrosolve.app es una herramienta matematica en espanol para simular y explicar
 - Las graficas deben priorizar legibilidad: ejes discretos, tooltips claros, blanco para datos activos y zinc para contexto.
 - En bentos y tarjetas, los iconos informativos clickeables tipo `!`/info deben mostrar cursor de mano, ser visibles en gris claro y tener tamano minimo cercano a 16px. Los iconos de ayuda tipo `?` deben ser solo de hover, con cursor de ayuda/default, sin sugerir click.
 - Evitar microcopy demasiado pequeno. Descripciones de tarjeta y ayudas debajo de titulos deben rondar 13px; etiquetas tecnicas secundarias no deberian bajar de 10px salvo casos muy puntuales.
+- Para switchers con `Tabs`, seguir el patron visual de los modulos existentes: lista `bg-zinc-950` con borde `zinc-800`, texto inactivo `zinc-500`, hover blanco y opcion activa `bg-zinc-800` con texto blanco. Usar tipografia mono, mayusculas y tracking tecnico; evitar overrides `!important` que alteren estos estados.
 
 ## Frontend
 

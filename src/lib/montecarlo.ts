@@ -167,6 +167,76 @@ export interface HistogramBin {
   theoreticalProb: number; // probabilidad teórica del bin
 }
 
+export type MonteCarloDistribution = "Poisson" | "Exponencial";
+
+export interface SimulatedVariableSummary {
+  variable: string;
+  mean: number;
+  variance: number;
+  standardDeviation: number;
+  minimum: number;
+  maximum: number;
+}
+
+export interface MonteCarloDataset {
+  rows: number[][];
+  summaries: SimulatedVariableSummary[];
+  theoreticalMean: number;
+  theoreticalVariance: number;
+}
+
+/** Genera una base rectangular: variables en columnas y observaciones en filas. */
+export function generateMonteCarloDataset(
+  distribution: MonteCarloDistribution,
+  parameter: number,
+  variableCount: number,
+  observationCount: number
+): MonteCarloDataset {
+  if (!Number.isFinite(parameter) || parameter <= 0) {
+    throw new Error("El parámetro de la distribución debe ser mayor que cero.");
+  }
+  if (!Number.isInteger(variableCount) || variableCount < 1) {
+    throw new Error("La cantidad de variables debe ser un entero positivo.");
+  }
+  if (!Number.isInteger(observationCount) || observationCount < 1) {
+    throw new Error("La cantidad de observaciones debe ser un entero positivo.");
+  }
+
+  const columns = Array.from({ length: variableCount }, () => [] as number[]);
+  const rows = Array.from({ length: observationCount }, () =>
+    Array.from({ length: variableCount }, (_, columnIndex) => {
+      const value = distribution === "Poisson"
+        ? randomPoisson(parameter)
+        : randomExponential(parameter);
+      columns[columnIndex].push(value);
+      return value;
+    })
+  );
+
+  const summaries = columns.map((values, index) => {
+    const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+    const variance = values.length > 1
+      ? values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / (values.length - 1)
+      : 0;
+
+    return {
+      variable: `Variable ${index + 1}`,
+      mean,
+      variance,
+      standardDeviation: Math.sqrt(variance),
+      minimum: Math.min(...values),
+      maximum: Math.max(...values),
+    };
+  });
+
+  return {
+    rows,
+    summaries,
+    theoreticalMean: distribution === "Poisson" ? parameter : 1 / parameter,
+    theoreticalVariance: distribution === "Poisson" ? parameter : 1 / parameter ** 2,
+  };
+}
+
 /** Genera datos agrupados para el histograma de la simulación */
 export function generateHistogramData(
   samples: number[],
@@ -236,4 +306,3 @@ export function generateHistogramData(
     return bins;
   }
 }
-

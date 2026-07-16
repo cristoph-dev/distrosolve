@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertCircle, BarChart3, ChevronLeft, ChevronRight, Info, Waypoints } from "lucide-react";
+import { AlertCircle, BarChart3, ChevronLeft, ChevronRight, HelpCircle, Info, Waypoints } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import GlossaryPopoverLink from "@/components/GlossaryPopoverLink";
 import {
   calculateMultipleServerLimited,
@@ -259,19 +260,19 @@ export function MultipleServersQueueModule({ embedded = false }: { embedded?: bo
             ) : (
               <div className="grid lg:grid-cols-[1fr_1.1fr]">
                 <div className="grid grid-cols-2 border-b border-zinc-800 lg:border-b-0 lg:border-r">
-                  <Metric label="Rho" value={`${(results.rho * 100).toFixed(2)}%`} sub="Utilización" />
-                  <Metric label="Servidores" value={String(results.servers)} sub="Canales" />
-                  <Metric label="Tasa servicio" value={format(results.serviceRate)} sub="μ por servidor" />
-                  <Metric label="P0" value={`${(results.p0 * 100).toFixed(2)}%`} sub="Sistema vacío" />
-                  <Metric label="L" value={format(results.L)} sub="Clientes sistema" />
-                  <Metric label="Lq" value={format(results.Lq)} sub="Clientes cola" />
-                  <Metric label="W" value={format(results.W)} sub="Tiempo sistema" />
-                  <Metric label="Wq" value={format(results.Wq)} sub="Tiempo cola" />
-                  <Metric label="λ efectiva" value={format(results.lambdaEff)} sub="Entrada real" />
+                  <Metric label="Rho" value={`${(results.rho * 100).toFixed(2)}%`} sub="Utilización" tooltip="Fracción promedio de la capacidad total de servicio que está ocupada" />
+                  <Metric label="Servidores" value={String(results.servers)} sub="Canales" tooltip="Cantidad de servidores paralelos que atienden desde una cola común" />
+                  <Metric label="Tasa servicio" value={format(results.serviceRate)} sub="μ por servidor" tooltip="Cantidad promedio de clientes que atiende cada servidor por unidad de tiempo" />
+                  <Metric label="P0" value={`${(results.p0 * 100).toFixed(2)}%`} sub="Sistema vacío" tooltip="Probabilidad de que no haya clientes en el sistema" />
+                  <Metric label="L" value={format(results.L)} sub="Clientes sistema" tooltip="Número promedio de clientes en cola y en servicio" />
+                  <Metric label="Lq" value={format(results.Lq)} sub="Clientes cola" tooltip="Número promedio de clientes esperando en la cola común" />
+                  <Metric label="W" value={format(results.W)} sub="Tiempo sistema" tooltip="Tiempo promedio desde que un cliente llega hasta que sale" />
+                  <Metric label="Wq" value={format(results.Wq)} sub="Tiempo cola" tooltip="Tiempo promedio que un cliente espera antes de ser atendido" />
+                  <Metric label="λ efectiva" value={format(results.lambdaEff)} sub="Entrada real" tooltip="Tasa real de clientes que logran ingresar al sistema" />
                   {results.model === "mmsk" && (
                     <>
-                      <Metric label="λ perdida" value={format(results.lambdaLost)} sub="Rechazo" />
-                      <Metric label="PK" value={`${((results.pk ?? 0) * 100).toFixed(2)}%`} sub="Sistema lleno" />
+                      <Metric label="λ perdida" value={format(results.lambdaLost)} sub="Rechazo" tooltip="Tasa de llegadas rechazadas porque el sistema está lleno" />
+                      <Metric label="PK" value={`${((results.pk ?? 0) * 100).toFixed(2)}%`} sub="Sistema lleno" tooltip="Probabilidad de encontrar el sistema en su capacidad máxima K" />
                     </>
                   )}
                 </div>
@@ -379,10 +380,13 @@ function NumberInput({
   );
 }
 
-function Metric({ label, value, sub }: { label: string; value: string; sub: string }) {
+function Metric({ label, value, sub, tooltip }: { label: string; value: string; sub: string; tooltip?: string }) {
   return (
     <div className="min-h-24 border-b border-r border-zinc-800 p-4">
-      <div className="technical-caption text-zinc-500">{label}</div>
+      <div className="flex items-center gap-1.5">
+        <span className="technical-caption text-zinc-500">{label}</span>
+        {tooltip && <Tooltip><TooltipTrigger asChild><HelpCircle className="inline-help-icon" /></TooltipTrigger><TooltipContent side="right">{tooltip}</TooltipContent></Tooltip>}
+      </div>
       <div className="mt-2 break-words font-mono text-2xl text-white">{value}</div>
       <div className="mt-1 font-mono text-[10px] text-zinc-600">{sub}</div>
     </div>

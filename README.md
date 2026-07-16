@@ -10,7 +10,7 @@ El proyecto esta pensado como una herramienta academica directa: interfaz oscura
 - **Lineas de espera**: modelos de un servidor y multiples servidores, con y sin limite de capacidad.
 - **Teoria de colas**: calculadoras orientadas a metricas de rendimiento del sistema.
 - **Glosario**: definiciones y formulas clave para interpretar los resultados.
-- **Montecarlo**: modulo reservado, actualmente bajo construccion.
+- **Monte Carlo**: generación de bases de datos Poisson y Exponencial, resumen estadístico, histograma comparativo y exportación CSV.
 
 ## Lineas de espera incluidas
 
